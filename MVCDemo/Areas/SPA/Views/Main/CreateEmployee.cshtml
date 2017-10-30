@@ -1,0 +1,91 @@
+﻿@using MVCDemo.ViewModels.SPA
+@model CreateEmployeeViewModel
+
+<script src="~/Scripts/Validations.js"></script>
+<script>
+    function ResetForm() {
+        document.getElementById('TxtFName').value = "";
+        document.getElementById('TxtLName').value = "";
+        document.getElementById('TxtSalary').value = "";
+    }
+    function CancelSave() {
+        $('#DivCreateEmployee').dialog('close');
+    }
+    function SaveEmployee() {
+        if (IsValid()) {
+            var e = {
+                FirstName: $('#TxtFName').val(),
+                LastName: $('#TxtLName').val(),
+                Salary: $('#TxtSalary').val()
+            };
+            $.post("/SPA/Main/SaveEmployee", e).then(
+                function (r) {
+                    var newTr = $('<tr></tr>');
+                    var nameTd = $('<td></td>');
+                    var salaryTd = $('<td></td>');
+
+                    nameTd.text(r.EmployeeName);
+                    salaryTd.text(r.Salary);
+                    salaryTd.css('background-color', r.SalaryColor);
+
+                    newTr.append(nameTd);
+                    newTr.append(salaryTd);
+
+                    $('#EmployeeTable').append(newTr);  //显示新保存的数据
+                    $('#DivCreateEmployee').dialog('close'); //关闭对话框
+                }
+            );
+        }
+    }
+</script>
+
+<div>
+    <table>
+        <tr>
+            <td>
+                First Name:
+            </td>
+            <td>
+                <input type="text" id="TxtFName" name="FirstName" value="@Model.FirstName" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" align="right">
+                @Html.ValidationMessage("FirstName")
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Last Name:
+            </td>
+            <td>
+                <input type="text" id="TxtLName" name="LastName" value="@Model.LastName" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" align="right">
+                @Html.ValidationMessage("LastName")
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Salary:
+            </td>
+            <td>
+                <input type="text" id="TxtSalary" name="Salary" value="@Model.Salary" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" align="right">
+                @Html.ValidationMessage("Salary")
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <input type="submit" name="BtnSubmit" value="Save Employee" onclick="SaveEmployee();" />
+                <input type="submit" name="BtnSubmit" value="Cancel" onclick="CancelSave()" />
+                <input type="button" name="BtnReset" value="Reset" onclick="ResetForm();" />
+            </td>
+        </tr>
+    </table>
+</div>

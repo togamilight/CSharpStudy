@@ -1,0 +1,32 @@
+﻿[
+    {
+        "id": 1001,
+        "name": "小型手镯",
+        "iconName": "男性 手镯  (2)",
+        "price": 123,
+        "starLevel": 2,
+        "quality": 3,
+        "damage": 32,
+        "des": "这个是一个手镯可以增加你的威力"
+    },
+    {
+        "id": 1002,
+        "name": "白色翅膀",
+        "iconName": "男性翅膀 (1)",
+        "price": 233,
+        "starLevel": 3,
+        "quality": 30,
+        "damage": 100,
+        "des": "这是一个非常神奇的翅膀"
+    },
+    {
+        "id": 1003,
+        "name": "泰课魔戒",
+        "iconName": "男性戒指 (2)",
+        "price": 2133,
+        "starLevel": 4,
+        "quality": 100,
+        "damage": 200,
+        "des": "这是一个有魔力的翅膀，带上它之后可以飞翔"
+    }
+]

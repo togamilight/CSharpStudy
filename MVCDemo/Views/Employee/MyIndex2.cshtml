@@ -1,0 +1,33 @@
+﻿
+@using MVCDemo.ViewModels
+@model EmployeeListViewModel
+
+@{
+    ViewBag.Title = "MyIndex2";
+    Layout = "~/Views/Shared/MyLayout.cshtml";
+}
+
+@section TitleSection{
+    MyIndex
+}
+
+@section ContentBody{
+    @{
+        Html.RenderAction("GetAddNewLink");
+    }
+    <div>
+        <table border="1">
+            <tr>
+                <th>Employee Name</th>
+                <th>Salary</th>
+            </tr>
+            @foreach (var item in Model.Employees) {
+                <tr>
+                    <td>@item.EmployeeName</td>
+                    <td style="background-color:@item.SalaryColor">@item.Salary</td>
+                </tr>
+            }
+        </table>
+    </div>
+}
+

@@ -1,0 +1,43 @@
+﻿@using MVCDemo.ViewModels;
+@model EmployeeListViewModel
+
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>MyIndex1</title>
+</head>
+<body>
+    <div style="text-align:center">
+        Hello Model.UserName
+        <a href="/Authentication/Logout">Logout</a><!--注销-->
+    </div>
+
+    <hr />
+    @{ 
+        Html.RenderAction("GetAddNewLink");
+    }
+    <div>
+        <table border="1">
+            <tr>
+                <th>Employee Name</th>
+                <th>Salary</th>
+            </tr>
+            @foreach (var item in Model.Employees) {
+                <tr>
+                    <td>@item.EmployeeName</td>
+                    <td style="background-color:@item.SalaryColor">@item.Salary</td>
+                </tr>
+            }
+        </table>
+        @{
+            Html.RenderPartial("Footer", Model.FooterData);
+        }
+    </div>
+
+</body>
+</html>

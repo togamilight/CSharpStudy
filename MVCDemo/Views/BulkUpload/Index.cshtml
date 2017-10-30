@@ -1,0 +1,18 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/MyLayout.cshtml";
+}
+
+@section TitleSection{
+    BulkUpload
+}
+
+@section ContentBody{
+    <a href="/Employee/Index">Back</a>
+    <form action="/BulkUpload/Upload" method="post" enctype="multipart/form-data">
+        Select File: <input type="file" name="FileUpload" value=""/>
+        <input type="submit" name="btn_Submit" value="Upload"/>
+    </form>    
+}
+
