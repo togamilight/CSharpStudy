@@ -29,7 +29,7 @@ namespace Test {
             //Trans trans = new Trans() { Position = { x = 1, y = 2 } };
 
             var tom = new { Name = "Tom", Age = 9, T = 2.0};
-            Console.WriteLine("tom's type name:"+ tom.GetType().);
+            Console.WriteLine("tom's type name:"+ tom.GetType().Name);
             Console.ReadKey();
         }
 
