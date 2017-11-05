@@ -22,8 +22,32 @@ namespace _002类的定义
             //Console.WriteLine(test1.Test.a + " " + test1.Test.b + " " + test1.Test.s);
             //test1.Test.a = 2;
             //Console.WriteLine(test1.Test.a + " " + test1.Test.b + " " + test1.Test.s);
-            
+
+            MyClass1 class2of1 = new MyClass2();
+            class2of1.Show();
             Console.ReadKey();
+        }
+    }
+
+    interface MyInterface2 {
+        void Show();
+    }
+
+    abstract class MyClass1{
+        public virtual void Show() {
+            Console.WriteLine("Class1");
+        }
+    }
+
+    class MyClass2 : MyClass1{
+        public new void Show() {
+            Console.WriteLine("Class2");
+        }
+    }
+
+    class MyClass3 : MyInterface2 {
+        public void Show() {
+
         }
     }
 }

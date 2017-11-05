@@ -10,6 +10,7 @@ namespace _003实现自己的集合类MyList
     {
         static void Main(string[] args)
         {
+            List<int> a = new List<int>();
             MyList<int> list = new MyList <int>();
             Console.WriteLine(list.Capacity);
             list.Add(4);

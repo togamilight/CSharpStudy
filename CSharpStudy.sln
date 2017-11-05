@@ -65,6 +65,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVCDemo", "MVCDemo\MVCDemo.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "迭代器工作流程CodeList6_5", "迭代器工作流程CodeList6_5\迭代器工作流程CodeList6_5.csproj", "{4CB08B8F-31DA-4A22-9625-9795A8E708C6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ADO.Net练习", "ADO.Net练习\ADO.Net练习.csproj", "{15627185-E971-4C7B-B12A-DE12F6498EAA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -195,6 +197,10 @@ Global
 		{4CB08B8F-31DA-4A22-9625-9795A8E708C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4CB08B8F-31DA-4A22-9625-9795A8E708C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4CB08B8F-31DA-4A22-9625-9795A8E708C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15627185-E971-4C7B-B12A-DE12F6498EAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15627185-E971-4C7B-B12A-DE12F6498EAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15627185-E971-4C7B-B12A-DE12F6498EAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15627185-E971-4C7B-B12A-DE12F6498EAA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

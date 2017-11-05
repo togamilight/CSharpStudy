@@ -14,5 +14,6 @@ namespace _002类的定义 {
             this.b = b;
             this.s = s;
         }
+        public Test() { }
     }
 }
