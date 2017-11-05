@@ -10,7 +10,7 @@ using System.Data.Common;
 namespace ADO.Net练习 {
     class Program {
         static void Main(string[] args) {
-
+            SqlCommand command = new SqlCommand();
         }
     }
 }

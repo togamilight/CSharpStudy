@@ -658,7 +658,7 @@ var tom = new {Name = "Tom", Age = 9};	//不能加string和int
 
 
 
-# Asp .Net MVC
+# Asp .Net MVC5
 
 ### 控制器Controller
 
@@ -2023,7 +2023,7 @@ string connStr = ConfigurationManager.ConnectionStrings["connStr"].ToString();
   * **Fetching: **连接对象正在检索数据。
   * **Broken: **与数据源的连接中断。
 
-​	
+  ​
 
 ##### 注意用完要关闭连接和释放资源
 
@@ -2075,10 +2075,10 @@ string connStr = ConfigurationManager.ConnectionStrings["connStr"].ToString();
 
 **连接池的行为可以通过连接字符串来控制**，主要包括四个重要的属性：
 
-- **Connection Timeout：**连接请求等待超时时间。默认为15秒，单位为秒。
-- **Max Pool Size: **连接池中最大连接数。默认为100。
-- **Min Pool Size: **连接池中最小连接数。默认为0。
-- **Pooling: **是否启用连接池。**ADO.NET默认是启用连接池的，**因此，你需要手动设置Pooling=false来禁用连接池。
+- **Connection Timeout** ：连接请求等待超时时间。默认为15秒，单位为秒。
+- **Max Pool Size** ：连接池中最大连接数。默认为100。
+- **Min Pool Size** ：连接池中最小连接数。默认为0。
+- **Pooling** ：是否启用连接池。**ADO.NET默认是启用连接池的** ，因此，你需要手动设置Pooling=false来禁用连接池。
 - **Connection Lifetime**：连接生存时间，当一个连接被返回到连接池时，它的创建时间会与当前时间进行对比。如果这个时间跨度超过了连接的有效期的话，连接就被取消。其缺省值为0。值0可以保证连接有最大时限
 - **Connection Reset**： 连接重置，表示一个连接在从连接池中被移除时是否被重置。缺省值为真。
 
@@ -2086,7 +2086,7 @@ string connStr = ConfigurationManager.ConnectionStrings["connStr"].ToString();
 
 #####连接池异常与处理方法
 
-当用户打开一个连接而没有正确或者及时的关闭时，经常会引发“连接泄露”问题。泄露的连接，会一直保持打开状态，直到调用Dispose方法，垃圾回收器（GC）才关闭和释放连接。与ADO不同，ADO.NET需要手动的关闭使用完的连接。**一个重要的误区是：当连接对象超出局部作用域范围时，就会关闭连接。**实际上，当超出作用域时，**释放的只是连接对象而非连接资源。使用完的连接应当尽快的正确的关闭和释放**
+当用户打开一个连接而没有正确或者及时的关闭时，经常会引发“连接泄露”问题。泄露的连接，会一直保持打开状态，直到调用Dispose方法，垃圾回收器（GC）才关闭和释放连接。与ADO不同，ADO.NET需要手动的关闭使用完的连接。**一个重要的误区是：当连接对象超出局部作用域范围时，就会关闭连接** 。实际上，当超出作用域时，**释放的只是连接对象而非连接资源。使用完的连接应当尽快的正确的关闭和释放**
 
 
 
@@ -2097,6 +2097,69 @@ string connStr = ConfigurationManager.ConnectionStrings["connStr"].ToString();
 - 确保并维持连接池中至少有一个打开的连接。
 - 尽力避免池碎片的产生。主要包括集成安全性产生的池碎片以及使用许多数据库产生的池碎片。
   - 池碎片是许多 Web 应用程序中的一个常见问题，应用程序可能会创建大量在进程退出后才会释放的池。 这样，将打开大量的连接，占用许多内存，从而导致性能降低。
+
+
+
+###Command对象
+
+**它封装了所有对外部数据源的操作（包括增、删、查、改等SQL语句与存储过程），并在执行完成后返回合适的结果。**都继承于DBCommand抽象类
+
+
+
+##### 属性
+
+* **CommandText** ：获取或设置对数据源执行的文本命令。默认值为空字符串。
+
+* **CommandType** ：命令类型，指示或指定如何解释CommandText属性。CommandType属性的值是一个枚举类型，定义结构如下：
+
+  ```c#
+  public enum CommandType{
+    Text = 1,    //SQL 文本命令。（默认。）          
+    StoredProcedure = 4,    // 存储过程的名称。          
+    TableDirect = 512    //表的名称。  
+  }
+  ```
+
+  需要特别注意的是，**将CommandType 设置为 StoredProcedure 时，应将 CommandText 属性设置为存储过程的名称。** 当调用 Execute 方法之一时，该命令将执行此存储过程。
+
+* **Connection** ：设置或获取与数据源的连接。
+
+* **Parameters** ：绑定SQL语句或存储过程的参数。参数化查询中不可或缺的对象，非常重要。
+
+* **Transaction** ：获取或设置在其中执行 .NET Framework 数据提供程序的 Command 对象的事务。
+
+
+
+##### 方法
+
+* **ExecuteNonQuery** ：执行不返回数据行的操作，并返回一个int类型的数据。
+
+  **注意** ：对于 UPDATE、INSERT 和 DELETE 语句，返回值为该命令所影响的行数。 对于其他所有类型的语句，返回值 为 -1。
+
+* **ExecuteReader** ：执行查询，并返回一个 DataReader 对象。
+
+  * 注意这个方法的重载ExecuteReader(CommandBehavior)枚举，成员如下：
+    * **Default**：此查询可能返回多个结果集。执行查询可能会影响数据库状态。当不设置CommandBehavior标志时默认为Default。
+    * **SingleResult**：查询返回个结果集。
+    *  **SchemaOnly**：查询仅返回列信息。当使用SchemaOnly时，用于SQL Server的.NET Framework数据提供程序将在要执行的语句前加上SET FMTONLY ON。
+    * **KeyInfo**：此查询返回列和主键信息。
+    *  **SingleRow**： 查询应返回一行。
+    * **SequentialAccess**：提供一种方法，以便DataReader处理包含带有大量二进制值的列的行。SequentialAccess不是加载整行，而是使DataReader将数据作为流来加载。然后可以使用GetBytes或GetChars方法来指定开始读取操作的字节位置以及正在返回的数据的有限的缓冲区大小。
+    * **CloseConnection**：在执行该命令时，如果关闭关联的DataReader对象，则关联的Connection对象也将关闭。
+
+*  **ExecuteScalar** ：执行查询，并返回查询结果集中第一行的第一列（object类型）。如果找不到结果集中第一行的第一列，则返回 null 引用。
+
+* **CreateParameter**：创建SqlParameter实例。 
+
+
+
+**ExecuteReader**返回一个**DataReader**对象。**DataReader是一个快速的，轻量级，只读的遍历访问每一行数据的数据流**。使用DataReader时，需要注意以下几点：
+
+* DataReader一次遍历一行数据，并返回一个包含列名字集合。
+* 第一次调用Read()方法获取第一行数据，并将游标指向下一行数据。当再次调用该方法时候，将读取下一行数据。
+* 当检测到不再有数据行时，Read()方法将返回false。
+* 通过HasRows属性，我们知道查询结果中是否有数据行。
+* 当我们使用完DataReader时，一定要注意关闭。SQL Server默认只允许打开一个DataReader。
 
 # Tip
 
