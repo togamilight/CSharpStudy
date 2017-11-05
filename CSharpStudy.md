@@ -1830,6 +1830,274 @@ NET Framework数据提供程序**用于连接数据库、执行命令和检索�
 
 
 
+### 连接字符串
+
+**连接字符串，就是一组被格式化的键值对：它告诉ADO.NET数据源在哪里，需要什么样的数据格式，提供什么样的访问信任级别以及其他任何包括连接的相关信息。**
+
+**连接字符串由一组元素组成，一个元素包含一个键值对，元素之间由“;”分开**
+
+```
+key1=value1;key2=value2;key3=value3...
+```
+
+* **SQL Server连接字符串**
+
+  1. 标准的安全连接
+
+     ```
+     Data Source=myServerAddress;Initial Catalog=myDataBase;
+     User Id=myUsername;Password=myPassword;
+     ```
+
+     说明：
+
+     **Data Source** ：需要连接的服务器。需要注意的是，如果使用的时Express版本的SQL Server需要在服务器名后加\SQLEXPRESS。例如，连接本地的SQL Server 2008 Express版本的数据库服务器，可以写成Data Source = (local)\SQLEXPRESS或者.\SQLEXPRESS。
+
+     **Initial Catalog** ：默认使用的数据库名称。
+
+     **User ID** ：数据库服务器账号。
+
+     **Password** ：数据库服务器密码。
+
+     或者也可以写成这样：
+
+     ```
+     Server=myServerAddress;Database=myDataBase;
+     User ID=myUsername;Password=myPassword;Trusted_Connection=False;
+     ```
+
+  2. 可信连接
+
+     ```
+     Data Source=myServerAddress;Initial Catalog=myDataBase;Integrated Security=SSPI;
+     ```
+
+     说明：
+
+     **Integrate Security** ：使用存在的windows安全证书访问数据库。可识别的值为true、false、yes、no以及与true等效的sspi。默认为false
+
+     **SSPI** ：Microsoft安全支持提供器接口（SSPI）是定义得较全面的公用API，用来获得验证、信息完整性、信息隐私等集成安全服务，以及用于所有分布式应用程序协议的安全方面的服务。应用程序协议设计者能够利用该接口获得不同的安全性服务而不必修改协议本身。 
+
+     或者也可以写成这样：
+
+     ```
+     Server=myServerAddress;Database=myDataBase;Trusted_Connection=True;
+     ```
+
+* #### Access连接字符串
+
+  ```
+  Provider=Microsoft.Jet.OLEDB.4.0;Data Source=C:\mydatabase.mdb;User Id=admin;Password=;
+  ```
+
+* #### MySQL连接字符串
+
+  ```
+  Server=myServerAddress;Database=myDataBase;Uid=myUsername;Pwd=myPassword;
+  ```
+
+* #### DB2连接字符串
+
+  ```
+  Server=myAddress:myPortNumber;Database=myDataBase;UID=myUsername;PWD=myPassword;
+  ```
+
+* #### Oracle连接字符串
+
+  ```
+  Data Source=TORCL;User Id=myUsername;Password=myPassword;
+  ```
+
+
+
+#####连接字符串中可用的选项
+
+**Data Source/Server/Address/Addr/Network Address**：SQL Server实例的名称或网络地址。
+
+Database/Initial Catalog**：数据库的名称。
+
+**User ID**：用来登陆数据库的帐户名。
+
+**Password/Pwd**：与帐户名相对应的密码。
+
+**Application Name**：应用程序的名称。如果没有被指定的话，它的值为.NET SqlClient Data Provider（数据提供程序）。
+
+**AttachDBFileName/Extended Properties（扩展属性）/Initial File Name（初始文件名）**： 可连接数据库的主要文件的名称，包括完整路径名称。数据库名称必须用关键字数据库指定。
+
+**Connect Timeout/Connection Timeout**：连接超时，一个到服务器的连接在终止之前等待的时间长度（以秒计），缺省值为15。
+
+**Connection Lifetime**：连接生存时间，当一个连接被返回到连接池时，它的创建时间会与当前时间进行对比。如果这个时间跨度超过了连接的有效期的话，连接就被取消。其缺省值为0。
+
+**Connection Reset**： 连接重置，表示一个连接在从连接池中被移除时是否被重置。缺省值为真。
+
+**Current Language**： SQL Server语言记录的名称。
+
+**Encrypt**：加密，当值为真时，如果服务器安装了授权证书，SQL Server就会对所有在客户和服务器之间传输的数据使用SSL加密。被接受的值有true、false、yes和no。
+
+**Enlist**：登记，表示连接池程序是否会自动登记创建线程的当前事务语境中的连接，其缺省值为真。
+
+**Integrated Security/Trusted Connection**：表示Windows认证是否被用来连接数据库。它可以被设置成true、false、yes、no或者是和true对等的sspi，其缺省值为false。
+
+**Pooling**：确定是否使用连接池。如果值为真的话，连接就要从适当的连接池中获得，或者，如果需要的话，连接将被创建，然后被加入合适的连接池中。其缺省值为真。
+
+**Max Pool Size**： 连接池允许的连接数的最大值，其缺省值为100。
+
+**Min Pool Size**： 连接池允许的连接数的最小值，其缺省值为0。
+
+**Network Library/Net**：用来建立到一个SQL Server实例的连接的网络库。支持的值包括： dbnmpntw (Named Pipes)、dbmsrpcn (Multiprotocol／RPC)、dbmsvinn(Banyan Vines)、dbmsspxn (IPX／SPX)和dbmssocn (TCP／IP)。协议的动态链接库必须被安装到适当的连接，其缺省值为TCP／IP。
+
+**Packet Size**：数据包大小，用来和数据库通信的网络数据包的大小。其缺省值为8192。
+
+**Persist Security Info**：保持安全信息，用来确定一旦连接建立了以后安全信息是否可用。如果值为真的话，说明像用户名和密码这样对安全性比较敏感的数据可用，而如果值为伪则不可用。重置连接字符串将重新配置包括密码在内的所有连接字符串的值。其缺省值为伪。
+
+**Workstation ID**：连接到SQL Server的工作站的名称。其缺省值为本地计算机的名称。
+
+
+
+#####如何构造连接字符串
+
+连接字符串本质上就是一个字符串，可以直接用`string`变量
+
+ADO.NET有专门的类来处理连接字符串：`DbConnectionStringBuilder`，为**强类型连接字符串生成基类**。
+
+```C#
+//以SQL Server为例
+SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder(){
+  DataSource = @"(local)\SQLEXPRESS",
+  InitialCatalog = "myDataBase",
+  IntegratedSecurity = true
+}
+//新建连接，开启关闭
+SqlConnection connection = new SqlConnection(builder.ToString())
+connection.Open();
+connection.Close();
+```
+
+
+
+##### 在配置文件中存储连接字符串
+
+在我们实际开发中，我们一般不会把连接字符串直接写在代码中，而是存储在配置文件里。把连接字符串写死在代码中，不便于维护，每次修改字符串时，还得重新编译代码。以ASP.NET应用程序为例，我们一般把连接字符串写在web.config配置文件的<connectionstrings>节点
+
+```xml
+<connectionStrings>
+    <add connectionString="Data Source=(LocalDb)\MSSQLLocalDB;
+                           Initial Catalog=myDataBase;Integrated Security=True" 		
+         name="connStr" providerName="System.Data.SqlClient" />
+</connectionStrings>
+```
+
+我们只需要在程序中添加相应代码来获取配置文件中的值
+
+```C#
+string connStr = ConfigurationManager.ConnectionStrings["connStr"].ToString(); 
+```
+
+
+
+### Connection对象
+
+**表示与特定数据源的连接**，不同的数据源，都对应着不同的Connection对象。都继承于DbConnection抽象类
+
+
+
+##### 方法
+
+* **Open: **使用 ConnectionString 所指定的设置打开数据库连接。
+* **Dispose: **释放由 Component 使用的所有资源。（实际好像是将Connection对象的连接字符串置为null，该连接返回连接池，重新使用时再初始化连接字符串？）
+* **Close: **关闭与数据库的连接。 **此方法是关闭任何已打开连接的首选方法。**Close 方法回滚任何挂起的事务。 然后，它将连接释放到连接池，或者在连接池被禁用的情况下关闭连接。
+
+
+
+#####属性
+
+* **Database: **在连接打开之后获取当前数据库的名称，或在连接打开之前获取连接字符串中指定的数据库名。
+* **DataSource: **获取要连接的数据库服务器的名称。
+* **ConnectionTimeOut: **获取在建立连接时终止尝试并生成错误之前所等待的时间。
+* **ConnectionString: **获取或设置用于打开连接的字符串。
+* **State: **获取描述连接状态的字符串。
+  * **Closed: **连接处于关闭状态。
+  * **Open: **连接处于打开状态。
+  * **Connecting: **连接对象正在与数据源连接。
+  * **Executing: **连接对象正在执行命令。
+  * **Fetching: **连接对象正在检索数据。
+  * **Broken: **与数据源的连接中断。
+
+​	
+
+##### 注意用完要关闭连接和释放资源
+
+1. 利用try/catch，在finally块中关闭连接和释放资源
+
+2. 利用using语句,**using语句的作用是确保资源使用后，并很快释放它们**
+
+   ```C#
+   using(SqlConnection conn = new SqlConnection(connStr)){ //todo }
+   ```
+
+
+
+
+
+###连接池
+
+连接池就是一个容器：它存放了一定数量的与数据库服务器的物理连接
+
+
+
+##### 连接池工作原理
+
+1. **创建连接池**
+
+   **连接池是具有类别区分的。**也就是说，同一个时刻同一应用程序域可以有多个不同类型的连接池。那么，连接池是如何标识区分的？细致的讲，是由**进程、应用程序域、连接字符串以及windows标识**（在使用集成的安全性时）共同组成签名来标识区分的。但对于同一应用程序域来说，一般只由**连接字符串**来标识区分。当打开一条连接时，如果该条连接的类型签名与现有的连接池类型不匹配，则创建一个新的连接池。反之，则不创建新的连接池。
+
+   即，创建具有相同的**连接字符串**的连接将会共享同一个连接池
+
+2. **分配空闲连接**
+
+   当用户创建连接请求或者说调用Connection对象的Open时，**连接池管理器首先需要根据连接请求的类型签名找到匹配类型的连接池，然后尽力分配一条空闲连接。**具体情况如下：
+
+   - 如果池中有空闲连接可用，返回该连接。
+   - 如果池中连接都已用完，创建一个新连接添加到池中。
+   - 如果池中连接已达到最大连接数，请求进入等待队列直到有空闲连接可用。
+
+3. **移除无效连接**
+
+   无效连接，即不能正确连接到数据库服务器的连接。对于连接池来说，存储的与数据库服务器的连接的数量是有限的。因此，对于无效连接，如果如不及时移除，将会浪费连接池的空间。其实你不用担心，连接池管理器已经很好的为我们处理了这些问题。如果连接长时间空闲，或检测到与服务器的连接已断开，连接池管理器会将该连接从池中移除。
+
+4. 回收使用完的连接
+
+   **当我们使用完一条连接时，应当及时关闭或释放连接，以便连接可以返回池中重复利用。**我们可以通过Connection对象的Close或Dispose方法，也可以通过C#的using语句来关闭连接。
+
+
+
+#####连接字符串属性
+
+**连接池的行为可以通过连接字符串来控制**，主要包括四个重要的属性：
+
+- **Connection Timeout：**连接请求等待超时时间。默认为15秒，单位为秒。
+- **Max Pool Size: **连接池中最大连接数。默认为100。
+- **Min Pool Size: **连接池中最小连接数。默认为0。
+- **Pooling: **是否启用连接池。**ADO.NET默认是启用连接池的，**因此，你需要手动设置Pooling=false来禁用连接池。
+- **Connection Lifetime**：连接生存时间，当一个连接被返回到连接池时，它的创建时间会与当前时间进行对比。如果这个时间跨度超过了连接的有效期的话，连接就被取消。其缺省值为0。值0可以保证连接有最大时限
+- **Connection Reset**： 连接重置，表示一个连接在从连接池中被移除时是否被重置。缺省值为真。
+
+
+
+#####连接池异常与处理方法
+
+当用户打开一个连接而没有正确或者及时的关闭时，经常会引发“连接泄露”问题。泄露的连接，会一直保持打开状态，直到调用Dispose方法，垃圾回收器（GC）才关闭和释放连接。与ADO不同，ADO.NET需要手动的关闭使用完的连接。**一个重要的误区是：当连接对象超出局部作用域范围时，就会关闭连接。**实际上，当超出作用域时，**释放的只是连接对象而非连接资源。使用完的连接应当尽快的正确的关闭和释放**
+
+
+
+##### 高效使用连接池的基本原则
+
+- 在最晚的时刻申请连接，在最早的时候释放连接。
+- 关闭连接时先关闭相关用户定义的事务。
+- 确保并维持连接池中至少有一个打开的连接。
+- 尽力避免池碎片的产生。主要包括集成安全性产生的池碎片以及使用许多数据库产生的池碎片。
+  - 池碎片是许多 Web 应用程序中的一个常见问题，应用程序可能会创建大量在进程退出后才会释放的池。 这样，将打开大量的连接，占用许多内存，从而导致性能降低。
+
 # Tip
 
 * `System.Enum, System.ValueType`本身都是引用类型
