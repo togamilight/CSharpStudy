@@ -1779,6 +1779,29 @@ Areas是实现Asp.net MVC 项目模块化管理的一种简单方法。
 
 
 
+
+###关于重定向
+
+* 重定向与转发的区别
+  1. 重定向后，浏览器上的地址发生改变，转发则不变
+  2. 重定向实际发生了两次请求，转发只有一次
+     * 重定向：发送请求 -->服务器运行-->响应请求，返回给浏览器一个新的地址与响应码-->浏览器根据响应码，判定该响应为重定向，自动发送一个新的请求给服务器，请求地址为之前返回的地址-->服务器运行-->响应请求给浏览器
+     * 转发：发送请求 -->服务器运行-->进行请求的重新设置，例如通过request.setAttribute(name,value)-->根据转发的地址，获取该地址的网页-->响应请求给浏览器
+  3. 重定向时的网址可以是任何网址，转发的网址必须是本站点的网址
+  4. 重定向：以前的request中存放的变量全部失效，并进入一个新的request作用域。
+     转发：以前的request中存放的变量不会失效，就像把两个页面拼到了一起。
+
+重定向后，是一个新的请求，原来放在request请求的**复杂对象会丢失**，比如：集合。但**简单的对象**可以传递，比如：字符串，数字
+
+
+
+### Tip
+
+* 在Action中，默认的，向get请求返回json是不允许的，这时需要使用
+
+  `return Json(object, JsonRequestBehavior.AllowGet);`
+
+
 # ADO.NET
 
 ###简单介绍ADO.NET
@@ -2141,9 +2164,9 @@ string connStr = ConfigurationManager.ConnectionStrings["connStr"].ToString();
   * 注意这个方法的重载ExecuteReader(CommandBehavior)枚举，成员如下：
     * **Default**：此查询可能返回多个结果集。执行查询可能会影响数据库状态。当不设置CommandBehavior标志时默认为Default。
     * **SingleResult**：查询返回个结果集。
-    *  **SchemaOnly**：查询仅返回列信息。当使用SchemaOnly时，用于SQL Server的.NET Framework数据提供程序将在要执行的语句前加上SET FMTONLY ON。
+    * **SchemaOnly**：查询仅返回列信息。当使用SchemaOnly时，用于SQL Server的.NET Framework数据提供程序将在要执行的语句前加上SET FMTONLY ON。
     * **KeyInfo**：此查询返回列和主键信息。
-    *  **SingleRow**： 查询应返回一行。
+    * **SingleRow**： 查询应返回一行。
     * **SequentialAccess**：提供一种方法，以便DataReader处理包含带有大量二进制值的列的行。SequentialAccess不是加载整行，而是使DataReader将数据作为流来加载。然后可以使用GetBytes或GetChars方法来指定开始读取操作的字节位置以及正在返回的数据的有限的缓冲区大小。
     * **CloseConnection**：在执行该命令时，如果关闭关联的DataReader对象，则关联的Connection对象也将关闭。
 
@@ -2160,6 +2183,31 @@ string connStr = ConfigurationManager.ConnectionStrings["connStr"].ToString();
 * 当检测到不再有数据行时，Read()方法将返回false。
 * 通过HasRows属性，我们知道查询结果中是否有数据行。
 * 当我们使用完DataReader时，一定要注意关闭。SQL Server默认只允许打开一个DataReader。
+
+
+
+### DataReader对象
+
+* 用`reader["列名"]`获取字段很浪费性能，应该在循环外用`int c1 = reader.GetOrdinal("列名")`获取列序号，然后再在循环中用`reader[c1]`获取字段
+
+
+
+### 数据库
+
+* 级联更新和删除：
+
+  ```sql
+  在外键上加上这两个约束，当主表更新或删除数据时，副表的数据也会更新
+  foreign key (Username) references MyUser(Username) on delete cascade on update cascade
+  ```
+
+* sql切换一个属性的值（男变成女，女变成男之类的）
+
+  ```sql
+  update Table set sex = (case when sex=1 then 0 else 1 end) where Id = 1;
+  ```
+
+* insert/update/delete每次只能作用于一张表
 
 # Tip
 
@@ -2196,3 +2244,55 @@ using (Font font3 = new Font("Arial", 10.0f),
 }
 ```
 
+* localDB默认排序规则：SQL_Latin1_General_CP1_CI_AS
+
+* JQuery修改input的value
+
+  ```javascript
+  //应该使用
+  $('').val(value);
+  //而不是以下这样，这样设置后当用户更改input框内的字符，将无法重新设置
+  $('').attr("value", value);		
+  ```
+
+  ​
+
+* 对一个div，可以使用`style="word-warp:break-word"`来使其内文本自动换行，并使div高度自适应
+
+  * word-wrap:break-word与word-break:break-all共同点是都能把长单词强行断句，不同点是word-wrap:break-word会首先起一个新行来放置长单词，新的行还是放不下这个长单词则会对长单词进行强制断句；而word-break:break-all则不会把长单词放在一个新行里，当这一行放不下的时候就直接强制断句了。
+
+* C#的DateTime通过json传递前端，转换成js的Date
+
+  ```
+  var date = eval('new ' + eval('/Date(1335258540000)/').source);
+  ```
+
+  js的日期格式转换
+
+  ```js
+  //js的日期格式转换
+  Date.prototype.format = function (format) {
+    var args = {
+      "M+": this.getMonth() + 1,
+      "d+": this.getDate(),
+      "h+": this.getHours(),
+      "m+": this.getMinutes(),
+      "s+": this.getSeconds(),
+      "q+": Math.floor((this.getMonth() + 3) / 3),  //quarter
+      "S": this.getMilliseconds()
+    };
+    if (/(y+)/.test(format))
+      format = format.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+    for (var i in args) {
+      var n = args[i];
+      if (new RegExp("(" + i + ")").test(format))
+        format = format.replace(RegExp.$1, RegExp.$1.length == 1 ? n : ("00" + n).substr(("" + n).length));
+    }
+    return format;
+  };	
+
+  //调用
+  var formatDate = date.format("yyyy/MM/dd");
+  ```
+
+  ​

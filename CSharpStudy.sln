@@ -67,6 +67,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "迭代器工作流程CodeLi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ADO.Net练习", "ADO.Net练习\ADO.Net练习.csproj", "{15627185-E971-4C7B-B12A-DE12F6498EAA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iBatisUnityTest", "iBatisUnityTest\iBatisUnityTest.csproj", "{272D6D36-A5B8-425F-8DB3-1A20D7694EE6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -201,6 +203,10 @@ Global
 		{15627185-E971-4C7B-B12A-DE12F6498EAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15627185-E971-4C7B-B12A-DE12F6498EAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15627185-E971-4C7B-B12A-DE12F6498EAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{272D6D36-A5B8-425F-8DB3-1A20D7694EE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{272D6D36-A5B8-425F-8DB3-1A20D7694EE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{272D6D36-A5B8-425F-8DB3-1A20D7694EE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{272D6D36-A5B8-425F-8DB3-1A20D7694EE6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

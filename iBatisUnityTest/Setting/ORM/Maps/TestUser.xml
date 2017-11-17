@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<sqlMap namespace="TestUser" xmlns="http://ibatis.apache.org/mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <!--别名-->
+  <alias>
+    <typeAlias alias="TestUser" type="iBatisUnityTest.Models.TestUser, iBatisUnityTest" />
+  </alias>
+  <!--缓存模型-->
+  <cacheModels>
+    <cacheModel id="UserCache" implementation="MEMORY">
+      <flushInterval hours="24"/>
+      <flushOnExecute statement="TestUser.AddUser"/>
+      <flushOnExecute statement="TestUser.UpdateUser"/>
+      <flushOnExecute statement="TestUser.DeleteUser"/>
+      <flushOnExecute statement="TestUser.DeleteUsers"/>
+      <property name="Type" value="WEAK"/>
+    </cacheModel>
+  </cacheModels>
+  <!--字段映射-->
+  <resultMaps>
+    <resultMap id="UserResult" class="TestUser">
+      <result property="Id" column="Id"/>
+      <result property="Name" column="Name"/>
+      <result property="DateTime" column="DateTime"/>
+      <!--<result property="Password" column="Password"/>-->
+    </resultMap>
+  </resultMaps>
+  <statements>
+    <!--添加-->
+    <insert id="AddUser" parameterClass="TestUser">
+      insert into TestUser(Name,DateTime) values(#Name#,#DateTime#)
+      <!--插入数据之后，model对象的主属性得到自增主键的新值-->
+      <selectKey resultClass="int" type="post" property="Id">
+        SELECT @@IDENTITY AS value
+      </selectKey>
+    </insert>
+    <!--修改-->
+    <update id="UpdateUser" parameterClass="TestUser">
+      update TestUser set Name = #Name# where Id = #Id#
+    </update>
+    <!--根据条件语句whereSql获取所有对象-->
+    <select id="GetAllUserBySql" resultMap="UserResult" parameterClass="string"  cacheModel="UserCache">
+      select * from TestUser $whereSql$
+    </select>
+    <!--删除-->
+    <delete id="DeleteUser" parameterClass="TestUser">
+      delete from TestUser where Id = #Id#
+    </delete>
+  </statements>
+</sqlMap>
