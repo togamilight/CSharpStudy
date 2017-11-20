@@ -2209,6 +2209,861 @@ string connStr = ConfigurationManager.ConnectionStrings["connStr"].ToString();
 
 * insert/update/delete每次只能作用于一张表
 
+
+
+# 留言板系统
+
+使用asp.net mvc制作了一个留言板系统。注册用户可以进行留言，然后管理员对用户及留言进行回复和管理，留言分为公开和非公开，游客可以看到和搜索公开留言，用户可以删除和修改自己的非公开留言。
+
+
+
+##第一版
+
+仅使用asp.net mvc，数据库连接使用ado.net
+
+
+
+### 数据库
+
+使用SQL Server13.0.1601（LocalDB）
+
+
+
+#### 用户表MyUser
+
+因为User在SQL Server中是关键字，若要用User表，则要写成`[User]`，这里采用MyUser。
+
+| 列名       | 类型           | 约束                     | 备注   |
+| -------- | ------------ | ---------------------- | ---- |
+| Id       | INT          | IDENTITY(自增), NOT NULL | 自增Id |
+| Username | NVARCHAR(20) | UNIQUE, NOT NULL       | 用户名  |
+| Password | NVARCHAR(20) | NOT NULL               | 密码   |
+| PhoneNum | NVARCHAR(20) | NOT NULL               | 手机号码 |
+| SignDate | DATE         | NOT NULL               | 注册   |
+| NewReply | INT          | NOT NULL(0)            | 新回复数 |
+
+T-SQL
+
+```sql
+CREATE TABLE [dbo].[MyUser] (
+    [Id]       INT 				IDENTITY (1, 1) NOT NULL,
+  	/*SQL Server中，中文要使用NVARCAHR(可变长度 Unicode 字符数据)*/
+    [Username] NVARCHAR (20) 	NOT NULL,	
+    [Password] NVARCHAR (20) 	NOT NULL,
+    [PhoneNum] NVARCHAR (20) 	NOT NULL,
+    [SignDate] DATE          	NOT NULL,
+    [NewReply] INT           	DEFAULT ((0)) NOT NULL,
+    PRIMARY KEY CLUSTERED ([Id] ASC),		/*主键*/
+    UNIQUE NONCLUSTERED ([Username] ASC)	/*唯一约束*/
+);
+```
+
+
+
+#### 管理员表Admin
+
+| 列名        | 类型           | 约束                     | 备注   |
+| --------- | ------------ | ---------------------- | ---- |
+| Id        | INT          | IDENTITY(自增), NOT NULL | 自增Id |
+| AdminName | NVARCHAR(20) | UNIQUE, NOT NULL       | 管理员名 |
+| Password  | NVARCHAR(20) | NOT NULL               | 密码   |
+
+T-SQL
+
+```sql
+CREATE TABLE [dbo].[Admin] (
+    [Id]        INT 			IDENTITY (1, 1) NOT NULL,
+    [AdminName] NVARCHAR (20) 	NOT NULL,
+    [Password]  NVARCHAR (20) 	NOT NULL,
+    PRIMARY KEY CLUSTERED ([Id] ASC),		/*主键*/
+    UNIQUE NONCLUSTERED ([AdminName] ASC)	/*唯一约束*/
+);
+```
+
+
+
+#### 留言表Message
+
+| 列名       | 类型            | 约束                            | 备注   |
+| -------- | ------------- | ----------------------------- | ---- |
+| Id       | INT           | IDENTITY(自增), NOT NULL        | 自增Id |
+| Username | NVARCHAR(20)  | NOT NULL, 外键(MyUser.Username) | 用户名  |
+| Title    | NVARCHAR(50)  | NOT NULL                      | 标题   |
+| Content  | NVARCHAR(500) | NOT NULL                      | 正文   |
+| IsPublic | BIT           | NOT NULL(0)                   | 是否公开 |
+| DateTime | DATETIME      | NOT NULL                      | 发表日期 |
+| ReplyNum | INT           | NOT NULL(0)                   | 回复数  |
+| NewReply | INT           | NOT NULL(0)                   | 新回复数 |
+
+T-SQL
+
+```sql
+CREATE TABLE [dbo].[Message] (
+    [Id]       INT            IDENTITY (1, 1) NOT NULL,
+    [Username] NVARCHAR (20)  NOT NULL,
+    [Title]    NVARCHAR (50)  NOT NULL,
+    [Content]  NVARCHAR (500) NOT NULL,
+    [IsPublic] BIT            DEFAULT ((0)) NOT NULL,
+    [DateTime] DATETIME       NOT NULL,
+    [ReplyNum] INT            DEFAULT ((0)) NOT NULL,
+    [NewReply] INT            DEFAULT ((0)) NOT NULL,
+    PRIMARY KEY CLUSTERED ([Id] ASC),	/*主键*/
+  	/*外键，级联删除和级联更新*/
+    FOREIGN KEY ([Username]) REFERENCES [dbo].[MyUser] ([Username]) ON DELETE CASCADE ON UPDATE CASCADE
+);
+GO
+
+/*触发器，在Message删除时，在对应的MyUser条目中减去新回复数NewReply*/
+CREATE TRIGGER tgr_message_delete
+ON Message
+AFTER DELETE
+AS
+BEGIN
+UPDATE MyUser SET MyUser.NewReply = MyUser.NewReply - deleted.NewReply
+FROM MyUser, deleted 
+WHERE MyUser.Username = deleted.Username;
+END
+```
+
+
+
+#### 回复表Reply
+
+| 列名        | 类型            | 约束                            | 备注   |
+| --------- | ------------- | ----------------------------- | ---- |
+| Id        | INT           | IDENTITY(自增), NOT NULL        | 自增Id |
+| MessageId | INT           | NOT NULL, 外键(Message.Id)      | 留言Id |
+| AdminName | NVARCHAR(20)  | NOT NULL, 外键(Admin.AdminName) | 管理员名 |
+| Content   | NVARCHAR(500) | NOT NULL                      | 回复正文 |
+| DateTime  | DATETIME      | NOT NULL                      | 回复日期 |
+
+T-SQL
+
+```sql
+CREATE TABLE [dbo].[Reply] (
+    [Id]        INT            IDENTITY (1, 1) NOT NULL,
+    [MessageId] INT            NOT NULL,
+    [AdminName] NVARCHAR (20)  NOT NULL,
+    [Content]   NVARCHAR (500) NOT NULL,
+    [DateTime]  DATETIME       NOT NULL,
+    PRIMARY KEY CLUSTERED ([Id] ASC),	/*主键*/
+  	/*外键，级联删除和级联更新*/
+    FOREIGN KEY ([MessageId]) REFERENCES [dbo].[Message] ([Id]) ON DELETE CASCADE ON UPDATE CASCADE,
+  	/*外键，级联删除和级联更新*/
+    FOREIGN KEY ([AdminName]) REFERENCES [dbo].[Admin] ([AdminName]) ON DELETE CASCADE ON UPDATE CASCADE
+);
+GO
+
+/*触发器，当插入Reply时，增加MyUser和Message的NewReply,Message的ReplyNum*/
+CREATE TRIGGER tgr_reply_insert
+ON Reply
+AFTER INSERT
+AS
+BEGIN
+UPDATE Message SET ReplyNum = ReplyNum + 1, NewReply = NewReply + 1 
+FROM Message, inserted 
+WHERE Message.Id = inserted.MessageId;
+
+UPDATE MyUser SET NewReply = NewReply + 1
+WHERE Username = (SELECT Message.Username FROM Message, inserted WHERE Message.Id = inserted.MessageId)
+END
+```
+
+
+
+#### Tip
+
+* User在SQL Server中是关键字，若要用User表，则要写成`[User]`，最好采用别的用户表名
+
+* `IDENTITY(1,1)`，用于Id，表示从1开始自增，每次自增1
+
+* **VARCHAR(n)与NVARCHAR(n)**
+
+  * **VARCHAR(n)**
+    长度为 n 个字节的可变长度且非 Unicode 的字符数据。n 必须是一个介于 1 和 8,000 之间的数值。存储大小为输入数据的字节的实际长度，而不是 n 个字节。
+
+  * **NVARCHAR(n)**
+
+    包含 n 个字符的可变长度 Unicode 字符数据。n 的值必须介于 1 与 4,000 之间。字节的存储大小是所输入字符个数的两倍。
+
+  * **VARCHAR(n)**中，英文字母占1个字节，汉字占2个字节，**NVARCHAR(n)**中则全占2个字节
+
+* SQL Server中，中文要使用NVARCAHR(可变长度 Unicode 字符数据)，自己拼接字符串查询时，要在中文字符串前加上'N'，将字符串转为Unicode字符，如
+
+  ```sql
+  SELECT * FROM MyUser WHERE Username LIKE N'%郑%'
+  ```
+
+* SQL中的通配符
+
+  * **%**：0到多个字符
+  * **_**：一个字符
+  * **[charlist]**：字符列表中的任何单一字符
+  * **[^charlist]/[!charlist]**：非字符列表中的任何单一字符，SQL Server不支持'!'
+
+* SQL Server中的**DATE/DATETIME**类型都对应C#中的**DateTime**，只是**DATE**的时分秒部分都为0
+
+* SQL Server中的**Bit**类型，对应的是C#中的**bool**，0对应false
+
+* 数据库中，主键和非空的Unique都可以作为别的表的外键
+
+* 级联更新和删除：
+
+  ```sql
+  在外键上加上这两个约束，当主表更新或删除数据时，副表的数据也会更新
+  foreign key (Username) references MyUser(Username) on delete cascade on update cascade
+  ```
+
+* sql切换一个属性的值（男变成女，女变成男之类的）
+
+  ```sql
+  update Table set sex = (case when sex=1 then 0 else 1 end) where Id = 1;
+  ```
+
+* insert/update/delete每次只能作用于一张表
+
+
+
+### ADO.NET
+
+开启一个事务示例：
+
+```c#
+var conn = GetConnection();
+conn.Open();
+//开启一个事务
+SqlTransaction trans = conn.BeginTransaction();
+var cmd = new SqlCommand();
+cmd.Connection = conn;
+cmd.Transaction = trans;
+try{
+  cmd.CommandText="...";
+  cmd.ExecuteNonQuery();
+  ...
+  cmd.CommandText="...";
+  cmd.ExecuteNonQuery();
+  ...
+  //提交事务
+  trans.Commit();
+}catch(Exception){
+  //回滚事务
+  trans.RollBack();
+  throw;
+}finally{
+  conn.Close()
+}
+```
+
+
+
+## 第二版
+
+在第一版的基础上，持久层使用iBatisNet，IoC框架使用Unity，数据展示使用easyui-datagrid
+
+iBatisNet与Unity结合，将数据库操作分为多层：
+
+* 最底层，iBatis的对应每个Model的配置文件，sql语句就写在其中
+* Dao层，通过传入Model对象和ISqlMapper，调用最底层的sql语句
+* Service层，调用Dao，被Controller调用
+
+Dao层和Service层都实现于接口，然后使用Unity进行依赖注入
+
+### iBatisNet和Unity需要导入的DLL
+
+* IBatisNet.Common.dll
+* IBatisNet.Common.Logging.Log4Net.dll
+* IBatisNet.DataMapper.dll
+
+
+* Microsoft.Practices.EnterpriseLibrary.Common.dll
+* Microsoft.Practices.ObjectBuilder2.dll
+* Microsoft.Practices.Unity.Configuration.dll
+* Microsoft.Practices.Unity.dll
+* MvcContrib.Unity.dll
+
+
+
+# IBatis
+
+##配置文件
+
+iBatis含有三种配置文件：
+
+* **providers.config**：指定数据库提供者，.Net版本等信息。名字可以更改
+* **xxx.xml**：映射规则。
+* **SqlMap.config**：大部分配置一般都在这里，如数据库连接等等。名字不可改
+
+
+
+###SqlMap.config
+
+示例
+
+ ```xml
+<?xml version="1.0" encoding="utf-8"?>
+<sqlMapConfig 
+  xmlns="http://ibatis.apache.org/dataMapper" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+<properties resource="../../../Files/properties.config"/>
+  
+<settings>
+  <!--是否使用Statement命名空间:
+        true:引用xml对象，必须加上命名空间
+        false:则直接通过方法名引用就行了，但注意保存保证方法名全局唯一。 -->
+    <setting useStatementNamespaces="true"/>
+    <!--是否启用sqlmap上的缓存机制-->
+    <setting cacheModelsEnabled="true" />
+    <setting validateSqlMap="false" />
+</settings>
+  
+<providers resource="Setting/ORM/Providers.config"/>
+<!-- Database connection information -->
+<database>
+  <provider name="sqlServer2.0"/>
+  <dataSource  name="iBatisInAction"  connectionString="Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=MessageBoard;Integrated Security=True" />
+</database>
+
+<sqlMaps>
+  <sqlMap resource="Setting/ORM/Maps/MyUser.xml" />
+  ...
+</sqlMaps>
+
+</sqlMapConfig>
+ ```
+
+1. **properties节点**
+
+   **properties**节点通常用于引入在外部定义一些键值对配置文件，以方便在后面统一调用，这样修改的时候，只修改就可以了。它的引入方式有3种：
+
+   * **resource**: 通过相对路径来确定文件的位置。
+   * **url**：通过绝对路径来确定文件位置。
+   * **embedded**:通过嵌入资源方式来确定文件位置。
+     * `<sqlMap embedded = "命名空间.文件名.后缀名, 命名空间"/>`
+
+2. **setting节点**
+
+   Settings节点里，可以配置以下5个信息：
+
+   * **useStatementNamespaces**：默认false,是否使用全局完整命名空间。最好启用	
+
+   - **cacheModelsEnabled** :默认true,是否启用缓存。
+   - **validateSqlMap**:默认false,使用启用SqlMapConfig.xsd来验证映射XML文件。
+   - **useReflectionOptimizer**:默认true,是否使用反射机制访问C#中对象的属性。
+   - **useEmbedStatementParams** 是否使用嵌入的方式声明可变参数
+
+3. **provider**
+
+4. **database**
+
+5. **SqlMaps**
+
+
+
+### XXX.xml映射文件
+
+示例
+
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<sqlMap namespace="Ibatis" xmlns="http://ibatis.apache.org/mapping" xmlns:xls="http://www.w3.org/2001/XMLSchema-instance">
+<alias>
+  <!--已在别的映射文件中定义了别名，就不用重复定义，不能与别的命名空间使用相同的别名-->
+    <typeAlias alias="Message" type="MessageBoard2.Models.Message,MessageBoard2" />
+</alias>
+  
+<!--缓存模型-->
+<cacheModels>
+  <cacheModel id="MessageCache" implementation="MEMORY">
+    <flushInterval hours="24"/>
+    <flushOnExecute statement="Message.AddMessage"/>
+    ...
+    <property name="Type" value="WEAK"/>
+  </cacheModel>
+</cacheModels>
+  
+<!--映射-->
+<resultMaps>
+  <resultMap id="Message" Class="Message">   <!--id会被statements节点所用，Class实体类所在位置-->
+    <result property="Id" column="Id"/>  <!--property实体类的属性名，column对应的列名-->
+    <result property="Title" column="Title"/>
+    <!--一对多关系，从这个statement中得到回复，column是传递过去的参数，Id-->
+    <result property="Replies" column="Id" select="Message.GetReplies"/>
+  </resultMap>
+</resultMaps>
+  
+<statements>
+  <!--添加-->
+  <insert id="AddMessage" parameterClass="Message">
+    INSERT INTO Message(Username,Title,Content,DateTime)
+    VALUES(#Username#,#Title#,#Content#,#DateTime#)
+    <!--插入数据之后，model对象的主属性得到自增主键的新值-->
+    <selectKey resultClass="int" type="post" property="Id">
+      SELECT @@IDENTITY AS value
+    </selectKey>
+  </insert>
+  
+  <!--获取留言，包括对应的回复-->
+  <!--id在程序中会被SqlMapper实体类所调用,resultMap就是resultMap节点的id-->
+  <select id="GetMessage" parameterClass="Message" resultMap="MessageResult" cacheModel="MessageCache">
+    SELECT Message.* FROM Message WHERE Message.Id = #Id# ;
+  </select>
+  <!--取得留言对应的回复-->
+  <select id="GetReplies" parameterClass="int" resultClass="MessageBoard2.Models.Reply" cacheModel="MessageCache">
+    SELECT * FROM Reply WHERE MessageId=#value#
+  </select>
+  
+</sqlMap>
+```
+
+####resultMaps
+
+定义了数据库字段名与实体类属性名之间的关系。当然，如果你数据库字段名与实体类属性名完全一样，那么resultMaps部分是可以省略的。**另外要注意一点，ResultMap的列比你查询的列不能少，也不能多。它不会说，ResultMap里映射的列多了，该属性就自动将select返回的列自动置null，而是直接所有列都不映射赋值。也就是说，Person表有Id，Name，Age3列，如果你只想要SELECT两个列(Id,Name)，那么ResultMap里面的3列映射没用了，你必须另外搞一个ResulpMap只映射两列的**
+
+
+
+#### statements
+
+用于定义你需要执行的语句，在程序中通过select的id调用。
+
+1. **parameterMap**：参数映射，需结合**parameterMap**节点对映射关系加以定义，对于存储过程之外的statement而言，建议使用**parameterClass**作为参数配置方式，一方面避免了参数映射配置工作，另一方面其性能表现更加出色
+
+2. **parameterClass**：参数类。指定了参数类型的完整类名（包括命名空间），可以用别名，对于简单类型，应用应该使用#value#
+
+3. **resultMap**：结果映射，需结合resultMap节点对映射关系加以定义
+
+4. **resultClass**：结果类。指定了结果类型的完整类名（包括命名空间），可以用别名
+
+5. **cacheModel**：**Statement**对应的Cache模块
+
+6. **extends**：重复使用SQL子句
+
+   ```xml
+   <select id="SelectAllCustomers" resultMap="Customer">
+      SELECT * FROM Customers
+   </select>
+
+   <select id="SelectAllCustomerOrderByCustomerID"
+           resultMap="Customer" extends="SelectAllCustomers">
+      ORDER BY CustomerID
+   </select>
+   ```
+
+* **parameterMap的属性**（不推荐）：
+
+  它可以接受三个属性，**id/class/extends**，其中是有**id**是必须的，**class**用于声明使用的实体类名称，可以是别名，也可以是全名
+  在它下一级节点中应该包含若干个**parameter**元素，来指定对象属性与当前变量的映射规则，**parameter**有如下常用属性：
+
+  1. **property**：指定类中的一个属性
+  2. **column**:定义的参数名称
+  3. **direction**:用于声明存储过程的参数方向（input,output,inputoutput）
+  4. **dbType**：用于指定property映射到数据库中的数据类型
+  5. **type**：用于为参数的对象指定CLR类型
+  6. **nullValue**：指定在property为何值时，将会在存储数据时候，替换为null，这是经常会被用到的
+  7. **size**:用于指定最大值
+
+* **resultMap**的属性：
+
+  它的属性很多是和**parameterMap**相对应的，但是值得一提的是**它下面可以添加一个constructor元素来匹配一个构造函数**。当然，这个的前提是Customers类中有这样一个构造函数。例如：
+
+  ```xml
+  <resultMaps>
+    <resultMap id="Customer" class="Customers">
+      <constructor>
+        <argument argumentName="PersonId" column="PersonID"/>
+        <argument argumentName="PersonName" column="PersonName"/>
+  　　</constructor>
+  　　<result property="PersonId" column="PersonID"/>
+  　　<result property="PersonName" column="PersonName"/>
+    </resultMap>
+  </resultMaps>
+  ```
+
+* **存储过程**
+
+  这里有一点区别就是,只可以使用**parameterMap**，而不可以使用**parameterClass** 。还有一点，就是他的参数完全是按照 **parameterMap**中的定义自动匹配的。
+
+  ```xml
+  <procedure id="demoProcedure" parameterMap="procedureDemo">
+  　　CustOrderHist
+  </procedure>
+  ```
+
+* **对SQL片段的引用**
+
+  ```xml
+  <sql id="order">
+  　　ORDER BY PersonID
+  </sql>
+
+  <select id="SelectAllCustomerOrderByCustomerID" resultMap="Customer">
+  　　SELECT * FROM Person
+  　　<include refid="test"/>
+  </select>
+  ```
+
+* $和#的区别是：\$value\$是直接拼接字符串，#value#是传入值
+
+* 可以一次使用多条sql语句，用begin/end包起来？
+
+
+
+### provider.config
+
+注意要将要使用的provider的enable属性改为true
+
+
+
+
+
+## SqlMapper类
+
+**Ibatis**中，加载、分析配置以及映射文件是在创建**SqlMapper**实例的时候进行的，另外对数据库的操作，也是在**SqlMapper**实例上调用方法来完成。在**IBatis**外部的程序中，创建**SqlMapper**的实例的方式是：
+
+```C#
+ISqlMapper mapper = Mapper.Instance();
+```
+
+在第一次调用`Mapper.Instance()`的时候，由**DomSqlMapBuilder**对象解析**SqlMap.config**(默认路径和命名)文件来创建**SqlMapper**实例，然后会缓存该**mapper**对象，如果程序运行过程中，修改了映射文件，那么再调用`Mapper.Instance()`创建**SqlMapper**实例时，**SqlMapper**会被重新加载创建。相当于一个文件缓存依赖，这个文件缓存依赖由`DomSqlMapBuilder.ConfigureAndWatch()`方法来实现。
+
+如果你不希望修改了配置文件就重新加载，可以通过这样来创建实例
+
+```C#
+ISqlMapper mapper = builder.Configure();
+```
+
+**IBatis.net**的这个东西有个地方不好，默认是使用**HttpContext**作为xxx容器的。
+
+当非**Web**请求线程调用时，如**Timer**调用时会报如下错误:
+
+**ibatis.net：WebSessionStore: Could not obtain reference to HttpContext**
+
+这个问题可以在创建**SQLMapper**的时候指定
+
+```C#
+SqlMapper.SessionStore = new HybridWebThreadSessionStore(sqlMapper.Id);
+
+public void InitMapper(string sqlMapperPath)
+{
+　　ConfigureHandler handler = new ConfigureHandler(Configure);	//Configure是一个方法
+　　DomSqlMapBuilder builder = new DomSqlMapBuilder();
+　　_mapper = builder.ConfigureAndWatch(sqlMapperPath, handler);
+　　_mapper.SessionStore = new
+    	IBatisNet.DataMapper.SessionStore.HybridWebThreadSessionStore(_mapper.Id);
+}
+```
+
+
+
+在留言板项目中，用了一个类来获取SqlMapper实例，如下：
+
+```C#
+//实现接口，用来进行依赖注入
+public class Mapper : IMapper{
+  private static volatile ISqlMapper _mapper = null;
+  public ISqlMapper Instance {
+    get {
+      //如果_mapper为空，实例化
+      if(_mapper == null) {
+        lock (typeof(SqlMapper)) {
+          //double check
+          if(_mapper == null) {
+            InitMapper("Setting/ORM/SqlMap.config");
+          }
+        }
+      }
+      return _mapper;
+    }
+  }
+  
+  public void InitMapper(string sqlMapperPath) {
+    ConfigureHandler handler = new ConfigureHandler(Configure);
+    DomSqlMapBuilder builder = new DomSqlMapBuilder();
+    //设置文件缓存依赖，每当sqlMapperPath指向的配置文件被修改，就调用handler，即Configure方法将实例置为null，再重新获取
+    _mapper = builder.ConfigureAndWatch(sqlMapperPath, handler);
+    _mapper.SessionStore = new 	
+      	IBatisNet.DataMapper.SessionStore.HybridWebThreadSessionStore(_mapper.Id);
+  }
+  
+  protected void Configure(object obj) {
+    _mapper = null;
+  }
+}
+```
+
+###SqlMapper的数据库操作方法
+
+1. **查询select**
+
+   * **QueryForList：返回List<T>强类型数据集合**
+
+   ```C#
+   IList<T> QueryForList<T>(string statementName, object parameterObject);
+   IList QueryForList(string statementName, object parameterObject);
+   void QueryForList<T>(string statementName, object parameterObject, IList<T> resultObject);
+   void QueryForList(string statementName, object parameterObject, IList resultObject);
+   IList<T> QueryForList<T>(string statementName, object parameterObject, int skipResults,int maxResults);
+   IList QueryForList(string statementName, object parameterObject, int skipResults, int maxResults);
+   ```
+
+   ​	！参数**skipResults**，表示从结果行掉过**skipResults**行后返回，**maxResults**表示返回的行数。这个在	分页中应该会用到。
+
+   * **QueryForObject：返回一行数据对应程序的实体类实例**
+
+   ```C#
+   object QueryForObject(string statementName, object parameterObject);
+   T QueryForObject<T>(string statementName, object parameterObject);
+   T QueryForObject<T>(string statementName, object parameterObject, T instanceObject);
+   object QueryForObject(string statementName, object parameterObject, object resultObject)
+   ```
+
+   * **QueryWithRowDelegate：通过委托过滤返回的数据**
+
+   ```C#
+   IList<T> QueryWithRowDelegate<T>(string statementName, object parameterObject, 
+                                    RowDelegate<T> rowDelegate);
+   IList QueryWithRowDelegate(string statementName, object parameterObject, 
+                              RowDelegate rowDelegate);
+   ```
+
+   * **QueryForDictionary**
+   * **QueryForMap**
+
+2. **insert**
+
+3. **update**
+
+4. **delete**
+
+##SQL语句
+
+### 一对多关系(嵌套类)
+
+```xml
+<!--结果映射-->
+<resultMap id="MessageResult" Class="Message">
+  <result property="Id" column="Id"/>
+  ...
+  <!--从这个statement中得到回复，column是传递过去的参数，Id-->
+  <result property="Replies" column="Id" select="Message.GetReplies"/>
+</resultMap>
+
+<!--获取留言，包括对应的回复-->
+<select id="GetMessage" parameterClass="Message" resultMap="MessageResult">
+      SELECT * FROM Message WHERE Id = #Id# ;
+</select>
+<!--取得留言对应的回复-->
+<select id="GetReplies" parameterClass="int" resultClass="MessageBoard2.Models.Reply">
+  SELECT * FROM Reply WHERE MessageId=#value#
+</select>
+```
+
+
+
+### 动态语句
+
+1. **传递单个参数**，直接用基元类型就可以了，调用如：#id#
+2. **传递多个参数**：传递多个参数通常使用键值对（如HashTable）或实体类。
+   * **parameterClass**是实体类时，如果只用到其中一个属性，调用时可以只传入一个基元类型
+
+#### 动态查询
+
+当满足一定的条件，才拼接某一段SQL代码。如：
+
+```xml
+<select id="SelectPersonById" resultMap="Person" parameterClass="Hashtable" >
+  SELECT TOP 1 * FROM Person WHERE 1=1
+  <dynamic prepend="AND">
+    <isLessEqual prepend="AND" property="Id" compareValue="3">  <!--当Id小于3时，才拼接该子句-->
+      Id = #Id#
+    </isLessEqual>
+    <isNotEmpty prepend="AND" property="Name">  <!--当Name不为""或Null时，才拼接该子句-->
+      Name = #Name#
+    </isNotEmpty>
+  </dynamic>
+</select>
+```
+
+条件如下：
+
+| 属性关键字                    | 含义                 |
+| ------------------------ | ------------------ |
+| <isEqual>                | 如果参数相等于值则查询条件有效。   |
+| <isNotEqual>             | 如果参数不等于值则查询条件有效。   |
+| <isGreaterThan>          | 如果参数大于值则查询条件有效。    |
+| <isGreaterEqual>         | 如果参数大于等于值则查询条件有效。  |
+| <isLessEqual>            | 如果参数小于值则查询条件有效。    |
+| <isPropertyAvailable>    | 如果参数中有此属性则查询条件有效。  |
+| <isNotPropertyAvailable> | 如果参数中没有此属性则查询条件有效。 |
+| <isNull>                 | 如果参数为NULL则查询条件有效。  |
+| <isNotNull>              | 如果参数不为NULL则查询条件有效。 |
+| <isEmpty>                | 如果参数为空则查询条件有效。     |
+| <isNotEmpty>             | 如果参数不为空则查询条件有效。    |
+| <isParameterPresent>     | 如果存在参数对象则查询条件有效。   |
+| <isNotParameterPresent>  | 如果不存在参数对象则查询条件有效。  |
+
+属性说明：
+
+- **perpend**可被覆盖的SQL语句组成部分，添加在语句的前面，该属性为可选。
+- **property** ：是比较的属性，该属性为必选。
+- **compareProperty** ：另一个用于和前者比较的属性(必选或选择compareValue属性)
+- **compareValue** ：用于比较的值(必选或选择compareProperty属性)
+
+
+
+还有一个比较特别的判断条件**iterate**。这个东西用于循环生成多个SQL片段。
+
+```xml
+<select id="SelectPersonById" resultMap="Person" parameterClass="Hashtable" >
+  SELECT * FROM Person
+  <dynamic prepend="WHERE">
+    <!--遍历NameList参数，对于每一个生成一个Name in NameList[i]-->
+    <isNotNull prepend="And" property="NameList">
+          Name in
+      <iterate property="NameList" open="(" close=")" conjunction=",">
+        #NameList[]#
+      </iterate>
+    </isNotNull>
+  </dynamic>
+</select>
+```
+
+**Iterate**的属性：
+
+- **prepend**——可被覆盖的SQL语句组成部分，添加在语句的前面，该属性为可选。
+- **property**——类型为List的用于遍历的元素属性，该属性为必选。
+- **open**——整个遍历内容体开始的字符串，用于定义括号，该属性为可选。
+- **close** ——整个遍历内容体结束的字符串，用于定义括号，该属性为可选。
+- **conjunction**——每次遍历内容之间的字符串，用于定义AND或OR，该属性为可选。
+
+
+
+####其它
+
+- **对SQL片段的引用**
+
+  ```xml
+  <sql id="order">
+  　　ORDER BY PersonID
+  </sql>
+
+  <select id="SelectAllCustomerOrderByCustomerID" resultMap="Customer">
+  　　SELECT * FROM Person
+  　　<include refid="test"/>
+  </select>
+  ```
+
+- $和#的区别是：\$value\$是直接拼接字符串，#value#是传入值
+
+- 可以一次使用多条sql语句，用begin/end包起来？
+
+
+
+## 输出SQL语句
+
+###输出到控制台
+
+在web.config进行配置
+
+```xml
+<configSections>
+  <!-- 输出IBatis.net执行的SQL语句到控制台 -->
+  <sectionGroup name="iBATIS">
+    <section name="logging" 
+             type="IBatisNet.Common.Logging.ConfigurationSectionHandler, IBatisNet.Common" />
+  </sectionGroup>
+</configSections>
+<iBATIS>
+  <logging>
+    <logFactoryAdapter type="IBatisNet.Common.Logging.Impl.TraceLoggerFA, IBatisNet.Common">
+      <arg key="showLogName" value="true" />
+      <arg key="showDataTime" value="true" />
+      <arg key="level" value="ALL" />
+      <arg key="dateTimeFormat" value="yyyy/MM/dd HH:mm:ss:SSS" />
+    </logFactoryAdapter>
+  </logging>
+</iBATIS>
+```
+
+
+
+### 输出到文件
+
+利用log4net，在web.config进行配置
+
+```xml
+<configSections>
+  <!-- 输出IBatis.net执行的SQL语句 -->
+  <sectionGroup name="iBATIS">
+    <section name="logging" 
+             type="IBatisNet.Common.Logging.ConfigurationSectionHandler, IBatisNet.Common" />
+  </sectionGroup>
+  <section name="log4net" type="log4net.Config.Log4NetConfigurationSectionHandler, log4net" />
+</configSections>
+<iBATIS>
+  <logging>
+    <logFactoryAdapter 
+      	type="IBatisNet.Common.Logging.Impl.Log4NetLoggerFA, IBatisNet.Common.Logging.Log4Net">
+      <arg key="configType" value="inline" />
+    </logFactoryAdapter>
+  </logging>
+</iBATIS>
+
+<log4net>
+  <!-- 定义输出的附加信息，大小，输出到的文件等等 -->
+  <appender name="RollingLogFileAppender" type="log4net.Appender.RollingFileAppender">
+    <param name="File" value="f:\log.txt" />
+    <param name="AppendToFile" value="true" />
+    <param name="MaxSizeRollBackups" value="2" />
+    <param name="MaximumFileSize" value="100KB" />
+    <param name="RollingStyle" value="Size" />
+    <param name="StaticLogFileName" value="true" />
+    <layout type="log4net.Layout.PatternLayout">
+      <param name="Header" value="[Header]\r\n" />
+      <param name="Footer" value="[Footer]\r\n" />
+      <param name="ConversionPattern" value="%d [%t] %-5p %c [%x] - %m%n" />
+    </layout>
+  </appender>
+  <appender name="ConsoleAppender" type="log4net.Appender.ConsoleAppender">
+    <layout type="log4net.Layout.PatternLayout">
+      <param name="ConversionPattern" value="%d [%t] %-5p %c [%x] &lt;%X{auth}&gt; - %m%n" />
+    </layout>
+  </appender>
+
+  <!-- 设置错误的级别以及附加信息 -->
+  <root>
+    <level value="DEBUG" />
+    <appender-ref ref="RollingLogFileAppender" />
+    <appender-ref ref="ConsoleAppender" />
+  </root>
+
+  <!-- 只是打印错误信息的级别 -->
+  <logger name="IBatisNet.DataMapper.Configuration.Cache.CacheModel">
+    <level value="DEBUG" />
+  </logger>
+  <logger name="IBatisNet.DataMapper.Configuration.Statements.PreparedStatementFactory">
+    <level value="DEBUG" />
+  </logger>
+  <logger name="IBatisNet.DataMapper.LazyLoadList">
+    <level value="DEBUG" />
+  </logger>
+  <logger name="IBatisNet.DataAccess.DaoSession">
+    <level value="DEBUG" />
+  </logger>
+  <logger name="IBatisNet.DataMapper.SqlMapSession">
+    <level value="DEBUG" />
+  </logger>
+  <logger name="IBatisNet.Common.Transaction.TransactionScope">
+    <level value="DEBUG" />
+  </logger>
+  <logger name="IBatisNet.DataAccess.Configuration.DaoProxy">
+    <level value="DEBUG" />
+  </logger>
+</log4net>
+```
+
+
+
 # Tip
 
 * `System.Enum, System.ValueType`本身都是引用类型
@@ -2237,11 +3092,8 @@ using (Font font1 = new Font("Arial", 10.0f))
 }
 
 //可在using语句中声明一个类型的多个实例
-using (Font font3 = new Font("Arial", 10.0f),
-            font4 = new Font("Arial", 10.0f))
-{
-    // Use font3 and font4.
-}
+using (Font font3 = new Font("Arial", 10.0f), font4 = new Font("Arial", 10.0f))
+{	// Use font3 and font4. }
 ```
 
 * localDB默认排序规则：SQL_Latin1_General_CP1_CI_AS
