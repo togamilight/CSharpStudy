@@ -1793,7 +1793,27 @@ Areas是实现Asp.net MVC 项目模块化管理的一种简单方法。
 
 重定向后，是一个新的请求，原来放在request请求的**复杂对象会丢失**，比如：集合。但**简单的对象**可以传递，比如：字符串，数字
 
+### WebAPI
 
+* **什么是WebAPI？**
+
+  Web API是一种用于创建基于HTTP的服务的ASP.NET技术。与web form和MVC一样，web API是ASP.NET的一种形式，它可以自动获取ASP.NET表单认证、异常处理等多种功能。
+
+  Web应用程序是可以通过Web访问的应用程序。“Web应用程序必须有UI”不是正确的。它们可以只是一些通过Web公开数据的业务应用程序。我们可以使用WebAPI创建Web应用程序
+
+* **Web API与Web Services和WCF Services有什么不同？**
+
+  Web Services和WCF Services是基于SOAP的服务。这里，HTTP将仅仅用作传输协议。Web API纯粹是基于HTTP的服务。这里不会有SOAP的介入。
+
+* **为什么WCF和Web Services需要SOAP？**
+
+  假设我们想从Technology1发送一些数据到Technology2，其中Technology2是WCF / Web Services，通信必须通过互联网/网络进行
+
+  Web意味着HTTP。HTTP将允许我们向特定URL发起请求，并让我们也传递一些数据。
+
+  现在，Technology1将其数据转换为XML字符串（或大部分JSON字符串），然后将其发送到Technology2。	
+
+  **注意**：当.Net Web Services或WCF Services是通信点时，数据将始终格式化为XML字符串。
 
 ### Tip
 
@@ -3061,6 +3081,132 @@ public class Mapper : IMapper{
   </logger>
 </log4net>
 ```
+
+
+
+# Unity
+
+Unity.config示例
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <configSections>
+    <section name="unity" 
+             type="Microsoft.Practices.Unity.Configuration.UnityConfigurationSection, 
+                   Microsoft.Practices.Unity.Configuration, Version=1.2.0.0, Culture=neutral, 
+                   PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL"/>
+  </configSections>
+  <unity>
+    <typeAliases>
+      <typeAlias alias="IMapper" type="iBatisUnityTest.DataMapper.IMapper, iBatisUnityTest"/>
+      <typeAlias alias="Mapper" type="iBatisUnityTest.DataMapper.Mapper, iBatisUnityTest"/>
+      <typeAlias alias="ITestUserDao" type="iBatisUnityTest.Dao.ITestUserDao, iBatisUnityTest"/>
+      <typeAlias alias="TestUserDao" type="iBatisUnityTest.Dao.TestUserDao, iBatisUnityTest"/>
+      <typeAlias alias="ITestUserService" 
+                 type="iBatisUnityTest.Service.ITestUserService, iBatisUnityTest"/>
+      <typeAlias alias="TestUserService" 
+                 type="iBatisUnityTest.Service.TestUserService, iBatisUnityTest"/>
+      <!--定义单例模式的别名-->
+      <typeAlias alias="singleton" 
+                 type="Microsoft.Practices.Unity.ContainerControlledLifetimeManager, 
+                       Microsoft.Practices.Unity"/>
+    </typeAliases>
+    <containers>
+      <container name="dt">
+        <types>
+          <!--Dao-->
+          <type type="ITestUserDao" mapTo="TestUserDao">
+            <lifetime type="singleton"/>
+            <typeConfig 
+                   extensionType="Microsoft.Practices.Unity.Configuration.TypeInjectionElement,
+               Microsoft.Practices.Unity.Configuration">
+            </typeConfig>
+          </type>
+
+          <!--Service-->
+          <type type="ITestUserService" mapTo="TestUserService">
+            <lifetime type="singleton"/>
+            <typeConfig 
+                   extensionType="Microsoft.Practices.Unity.Configuration.TypeInjectionElement,
+               Microsoft.Practices.Unity.Configuration">
+              <property name="UserDao" propertyType="TestUserDao">
+                <dependency />
+              </property>
+              <property name="DataMapper" propertyType="Mapper">
+                <dependency />
+              </property>
+            </typeConfig>
+          </type>
+
+          <!--Controller-->
+          <type type="iBatisUnityTest.Controllers.TestController,iBatisUnityTest">
+            <typeConfig 
+                   extensionType="Microsoft.Practices.Unity.Configuration.TypeInjectionElement,
+               Microsoft.Practices.Unity.Configuration">
+              <property name="UserService" propertyType="TestUserService">
+                <dependency />
+              </property>
+            </typeConfig>
+          </type>
+        </types>
+
+        <instances>
+          <add name="sqlMapperPath" type="System.String" value="Setting/ORM/sqlMap.config" />
+        </instances>
+
+      </container>
+    </containers>
+  </unity>
+</configuration>
+```
+
+在web.config中的<appSettings>添加
+
+```xml
+<appSettings>
+    <add key="unityConfigPath" value="Setting/IOC/unity.config" />
+</appSettings>
+```
+
+在Global.asax中添加
+
+```C#
+//实现IUnityContainerAccessor
+public class MvcApplication : System.Web.HttpApplication, IUnityContainerAccessor{
+  protected void Application_Start(){
+    InitializeContainer();	//实例化容器
+    AreaRegistration.RegisterAllAreas();
+    FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+    RouteConfig.RegisterRoutes(RouteTable.Routes);
+    BundleConfig.RegisterBundles(BundleTable.Bundles);
+  }
+  
+  private static UnityContainer _container;
+  public static IUnityContainer Container{
+    get{ return _container; }
+  }
+  IUnityContainer IUnityContainerAccessor.Container{
+    get { return Container; }
+  }
+  
+  protected virtual void InitializeContainer(){
+    if(_container == null){
+      _container = new UnityContainer();
+      // Set the Unity Controller Factory
+      ControllerBuilder.Current.SetControllerFactory(typeof(UnityControllerFactory));
+      string unityConfigFilePath = AppDomain.CurrentDomain.BaseDirectory +
+        ConfigurationManager.AppSettings["unityConfigPath"];
+      FileConfigurationSource configExternal = new FileConfigurationSource(unityConfigFilePath);
+      UnityConfigurationSection section =
+        (UnityConfigurationSection)configExternal.GetSection("unity");
+      section.Containers["dt"].Configure(_container);
+    }
+  }
+}
+```
+
+
 
 
 
