@@ -1815,6 +1815,42 @@ Areas是实现Asp.net MVC 项目模块化管理的一种简单方法。
 
   **注意**：当.Net Web Services或WCF Services是通信点时，数据将始终格式化为XML字符串。
 
+  **值得讨论的点：**
+
+  * 当开发者设计服务时，他实际上在服务内部创建一个或多个方法。每种方法都是为了一些特殊的功能。我们称之为web方法。当通信时，Technology1实际上会从服务中调用这些方法。现在在HTTP中，没有指定方法名称的规则。唯一的选择是，当客户端通过HTTP发送请求时，将方法名连接到数据，并将自己作为数据发送。在服务端，Service框架将从客户端接收到的数据分解为**实际的数据**和**方法名称**。然后调用服务中相应的方法传递实际数据作为参数。
+  * 当Technology1将数据发送到服务时，服务如何确保数据是从有效客户端发送的？不允许访问服务的人可能会尝试发送数据。为了解决这个问题，就像上述方法名称解决方案一样，Technology1将**验证证书**连接到数据，并将它们作为一个发送。在服务端，Service框架将从客户端接收到的数据分解为**凭证**，**方法名称**和**实际数据**。它会验证凭据，并确保在进行Web方法调用之前请求是已验证的请求
+
+* **服务如何从传入数据中提取不同的部分？**
+
+  当Technology1发送数据到服务时，数据实际上将包含三件东西 - **实际数据**，**验证证书**和**方法名称**。
+
+  在服务端，服务框架将很难独立地理解每个部分，因为服务是一个普遍的东西，它应该适用于每个人。其次客户端可以以任何格式发送数据。例如，客户端可以以“Data | Credential | MethodName”格式发送完整的数据，或者可以发送“Credential | Data | MethodName”格式。没有固定的格式。
+
+  **解决方案-标准封装**
+
+  为了解决这个问题，行业提出了一个名为**SOAP封装**的标准封装概念。
+
+  SOAP不过是一个专门的XML，它将封装所有需要发送的内容，但是是以标准格式。HTTP将从客户端发送SOAP封装到服务，反之亦然。
+
+  下面是引用的样例SOAP XML
+
+  ````XML
+  <?xml version="1.0"?>
+  <soap: Envelope
+  	xmlns:soap="http://www.w3.org/2001/12/soap-envelope"
+  	soap:encodingStyle="http://www.w3.org/2001/12/soap-encoding">
+  <soap: Body xmlns:m="http://www.example.org/stock">
+    <m: MyMethodName>
+      <m: MyData>Data in Json or XML format</m: MyData>
+    </m: MyMethodName>
+  </soap: Body>
+  </soap: Envelope>
+  ````
+
+  ​
+
+  ​
+
 ### Tip
 
 * 在Action中，默认的，向get请求返回json是不允许的，这时需要使用
