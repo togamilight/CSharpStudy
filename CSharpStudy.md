@@ -1826,7 +1826,7 @@ Areas是实现Asp.net MVC 项目模块化管理的一种简单方法。
 
   在服务端，服务框架将很难独立地理解每个部分，因为服务是一个普遍的东西，它应该适用于每个人。其次客户端可以以任何格式发送数据。例如，客户端可以以“Data | Credential | MethodName”格式发送完整的数据，或者可以发送“Credential | Data | MethodName”格式。没有固定的格式。
 
-  **解决方案-标准封装**
+* **解决方案-标准封装**
 
   为了解决这个问题，行业提出了一个名为**SOAP封装**的标准封装概念。
 
@@ -1847,15 +1847,91 @@ Areas是实现Asp.net MVC 项目模块化管理的一种简单方法。
   </soap: Envelope>
   ````
 
-  ​
+  **SOAP有什么缺点?**
 
-  ​
+  * 它增加了数据的整体大小，从而影响了性能。
+  * 轻量级框架（比如JavaScript，Mobile框架等等）创建和解析XML字符串比较困难。
 
-### Tip
+* **真正的解决方案**
+
+  解决方案将是纯粹的基于HTTP的服务。 没有任何SOAP封装的服务。 HTTP将直接将数据从一个位置传输到另一个位置。 这就是REST原理的来源。
+
+  REST（即表述性状态传递）表示以更高效的方式使用网络的现有功能并创建服务。 以它们表示的格式传输数据，而不是将它们放在SOAP信封中。
+
+  基于HTTP的服务完全基于REST原则，因此它们也被称为基于REST的服务。
+
+* **如何实施解决方案**
+
+  * **方法名称的解决方案**
+
+    现在在基于SOAP的服务（Web和WCF服务）中，每个服务都由URL标识。 同样的，REST服务将通过URL的帮助来识别。
+
+    对于REST服务，我们定义方法的方式将有所不同。
+
+    1. 它将定义为标准方法。标准方法意味着方法名称将被固定。它要么GET,POST,PUT或者DELETE
+    2. 或者它将定义任何名称的方法，但在这种情况下，每个自定义方法都会有一个URL。
+
+    在任何一种情况下，不需要从客户端发送参数作为方法名称。
+
+    * 在选择1的情况下，客户端将通过HTTP向REST服务发出请求。 请求的类型将是GET,POST,PUT或DELETE。 在服务端，服务框架将检查请求的类型并相应地调用服务中的方法。 方法名称问题得到解决。
+    * 在选择2的情况下，客户端将通过HTTP直接请求REST服务方法。 这是可能的，因为每个方法将有一个唯一的URL。
+
+  * **安全性的解决方案**
+
+    HTTP头和HTTP主体，它们都具有携带一些信息的能力。我们可以始终将凭证作为头部的一部分和数据作为主体的一部分。为了确保在传输过程中没有人能够看到头和正文中的数据，我们可以实现SSL(https)。
+
+  * 数据将通过HTTP直接以JSON或XML格式传递。大部分都是JSON。
+
+* **WCF REST与Web API有什么不同？**
+
+  WCF REST是用于创建基于REST的服务的早期Microsoft实现。
+
+  WCF从来没有用于REST。 它唯一的目的是支持SOA。 使用WCF创建REST服务涉及太多步骤，未来添加新功能对于微软来说是个大问题。
+
+  非WCF开发人员将无法创建WCF REST服务。Asp.Net Web API将会更简单，甚至一个非WCF开发者也能够使用它创建基于HTTP的服务。
+
+
+
+
+###Tip
+
 
 * 在Action中，默认的，向get请求返回json是不允许的，这时需要使用
 
   `return Json(object, JsonRequestBehavior.AllowGet);`
+
+* Json字符串，带引号的，用Content()返回可被浏览器解析为Json如
+
+  ````c#
+  return Content("{'key':'value'}");	//key可加可不加
+  //但是在1.4之后的JQuery中，必须用双引号！
+  return Content("{\"key\":\"value\"}");
+  ````
+
+* 后台调试输出使用`Debug.WriteLine()`
+
+* Controller请求外网API并获取JSON
+
+  ```C#
+  //拼接要访问的api地址
+  string url = "";
+  //创建Request
+  HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
+  request.Method = "get";
+  string res = string.Empty;
+  try{
+    HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+    //WebResponse response = request.GetResponse();
+    //Encoding.Default表示使用系统默认ANSI编码，解决中文乱码问题（StreamReader默认编码是UTF-8）
+    StreamReader reader = new StreamReader(response.GetResponseStream(),Encoding.Default);
+    res = reader.ReadToEnd();
+  }catch (Exception e){
+    res = "{error:'" + e.Message + "'}";
+    throw e;
+  }
+  ```
+
+  ​
 
 
 # ADO.NET
@@ -3246,6 +3322,125 @@ public class MvcApplication : System.Web.HttpApplication, IUnityContainerAccesso
 
 
 
+# DataTables
+
+基于JQuery的数据表格插件
+
+
+
+### 服务器端处理示例
+
+html
+
+```html
+<table id="myDataTable" class="table table-striped">
+  <thead id="DataTableThread">
+    <tr>
+      <th>闸次号</th>
+      <th>船只数量</th>
+      <th>状态</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+```
+
+js
+
+```js
+$("#myDataTable").DataTable({
+  scrollX: true,			//横向滚动
+  ordering: false,			//排序
+  lengthChange: false,		//选择每页条数
+  searching: false,			//搜索
+  serverSide: true,			//服务器端处理
+  processing: true,			//显示处理中
+  //data:dataTable传给服务器的值，callback：数据返回后执行的方法，setting：设置对象
+  ajax: function(data, callback, settings) {
+    $.ajax({
+      dataType: "JSON",
+      type: "POST",
+      data: {
+        pageSize: data.length,		//data.length:每页的条数
+        page: parseInt((data.start + 1) / data.length) + 1,	//data.start:第一条数据的起始位置(0)
+      },
+      url: url,
+      success: function(r) {
+        var returnData = {};
+        //封装返回的json变为dataTable要求的标准
+        returnData.data = r.result;				//数据
+        returnData.recordsTotal = r.total;		//总数据数
+        returnData.recordsFiltered = r.total;	//过滤后的数据总数
+        returnData.draw = data.draw;			//确保Ajax从服务器返回的是对应的
+        callback(returnData);
+      },
+      error: function(xmlHttpRequest, textStatus, errorThrown) {
+        alert("error:" + textStatus);
+      }
+    });
+  },
+  columns: [	//设置各列的值，默认为data，即json里对应的对象必须为data，可以通过dataSrc修改
+    {	
+      data: "queue_up_id",
+      //改变某列的显示
+      //data:该cell的值，type:当前列的类型，row：当前行的完整数据对象
+      //meta:包含 row: 当前行的索引，col: 当前列的索引，settings: 当前DataTables控件的setttings对象
+      render: function(data, type, row, meta) {	
+        return "<a href='xxx?queueUpId=" + encodeURIComponent(data) + "'>" + data + "</a>";
+      }
+  	},
+    {data: "shipcount"},
+    {data: "status"}
+  ],
+  columnDefs: [
+    {	//改变某列的显示
+      targets: 2,
+      render: function(data, type, row, meta) {
+        var text = "";
+        switch (data) {
+          case 0: text = "结束"; break;
+          case 1: text = "开始"; break;
+        }
+        return text;
+      }
+    },
+    {	//可以指定多列
+      targets: [0,1,2],
+      render: function (data, type, row, meta) {
+          return "<div style='text-align:center;white-space:nowrap'>" + data + "</div>";
+      }
+    }
+  ]
+
+});
+```
+
+
+
+* `columns.render`和`columnDefs.render`的区别：
+
+  其实这个的区别，归根到底是`columns`和`columndefs`的区别，它们两个的区别就有
+
+  1. `columns`先执行，`columnDefs`后执行
+  2. `columnDefs`比`columns`多一个属性 `columnDefs.targets`，有了它可以做很多`columns`做不到的事情
+     * **targets**可以有多种写法:
+       1. 0或者正整数(可用数组): 表示正向列的索引
+       2. 负数(可用数组): 表示反向列的索引
+       3. 字符串: 匹配th的class来选择列.
+       4. "_all":   所有列,也是默认值.
+
+  **针对第一点**:
+
+  每一次 DataTables 的是重绘或者重载都会后台执行很多回调函数
+
+  `columns.render`是在`createdRow`前执行的 `columnDefs.render`是在`rowCallback`后执行的
+
+  就会导致`columnDefs.render`执行的时候其实`tr`已经全部渲染出来的，大家就可以对全局做一些操作了， 如合并单元格、根据某个`tr`里面`td`改变另一个`tr`里面的`td`的渲染了等等
+
+  **针对第二点**：
+
+  就可以使一个`columnDefs.render`对应多个列了，或者在没有创建`columns`的时候使用，更加灵活，`columns.render`一对一的更加有针对性
+
 # Tip
 
 * `System.Enum, System.ValueType`本身都是引用类型
@@ -3327,6 +3522,33 @@ using (Font font3 = new Font("Arial", 10.0f), font4 = new Font("Arial", 10.0f))
 
   //调用
   var formatDate = date.format("yyyy/MM/dd");
+  ```
+
+
+
+
+* js获取今天和昨天日期
+
+  ```js
+  var today = new Date();
+  //算出昨天的日期
+  var yesterday = new Date();
+  yesterday.setTime(today.getTime() - 24 * 60 * 60 * 1000);
+  begin = yesterday.getFullYear()+"-"+(yesterday.getMonth()+1)+"-"+yesterday.getDate();
+  //今天
+  end = today.getFullYear()+"-"+(today.getMonth()+1)+"-"+today.getDate();
+  ```
+
+* js获取QueryString
+
+  ```js
+  function GetQueryString(name) {
+      var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+      var r = window.location.search.substr(1).match(reg);
+      if (r != null)
+          return decodeURIComponent(r[2]);
+      return "";
+  }
   ```
 
   ​
