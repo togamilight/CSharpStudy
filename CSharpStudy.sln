@@ -69,6 +69,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ADO.Net练习", "ADO.Net练
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iBatisUnityTest", "iBatisUnityTest\iBatisUnityTest.csproj", "{272D6D36-A5B8-425F-8DB3-1A20D7694EE6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApiTest", "WebApiTest\WebApiTest.csproj", "{054AB26C-D71A-4C60-B4C7-96818E16BF28}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -207,6 +209,10 @@ Global
 		{272D6D36-A5B8-425F-8DB3-1A20D7694EE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{272D6D36-A5B8-425F-8DB3-1A20D7694EE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{272D6D36-A5B8-425F-8DB3-1A20D7694EE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{054AB26C-D71A-4C60-B4C7-96818E16BF28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{054AB26C-D71A-4C60-B4C7-96818E16BF28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{054AB26C-D71A-4C60-B4C7-96818E16BF28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{054AB26C-D71A-4C60-B4C7-96818E16BF28}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

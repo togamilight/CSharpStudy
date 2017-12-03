@@ -1893,6 +1893,56 @@ Areas是实现Asp.net MVC 项目模块化管理的一种简单方法。
 
 
 
+##### 小示例
+
+```c#
+public class EmployeeController : ApiController{
+  public Employee GET() {
+    Employee e = new Employee() {
+      FirstName = "Sukesh", LastName = "Marla", Salary = 25000
+    };
+    return e;
+  }
+}
+```
+
+调用的url：`http://localhost:13430/api/Employee`	(在浏览器直接输入url发起的请求总是GET)
+
+返回的是xml
+
+```xml
+<Employee xmlns:i="http://www.w3.org/2001/XMLSchema-instance" 
+          xmlns="http://schemas.datacontract.org/2004/07/WebApiTest.Models">
+	<FirstName>Sukesh</FirstName>
+  	<LastName>Marla</LastName>
+  	<Salary>25000</Salary>
+</Employee>
+```
+
+* 可以分别创建四个名为**GET，POST，PUT，DELETE**的方法，对应四种请求
+
+* **如果我们想定义自定义方法呢？**
+
+  实际中，我们总是希望创建多个Get / Post / Put / Delete方法。如 GetCustomers，GetCustomerById。在这种情况下，我们必须定义多个路由，或者我们必须更改默认路由。
+
+  ```c#
+  config.Routes.MapHttpRoute(
+    name: "SecondRoute",
+    routeTemplate: "api/GetCustomerById/{id} ",
+    defaults: new {controller= "Customer", action= "GetCustomerById" }
+  );
+  config.Routes.MapHttpRoute(
+    name: "ThridRoute",
+    routeTemplate: "api/{controller}/{action}"
+  );
+  ```
+
+* **为什么response返回的是xml？**
+
+  Web API有一个非常好的功能，称为内容协商。客户可以协商输出内容。如果客户端请求XML，Web API将返回XML，如果客户端请求JSON，则Web API将返回JSON。
+
+  在Chrome浏览器中获得xml，在IE浏览器中获得json
+
 ###Tip
 
 
