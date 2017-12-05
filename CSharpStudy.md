@@ -1943,6 +1943,27 @@ public class EmployeeController : ApiController{
 
   在Chrome浏览器中获得xml，在IE浏览器中获得json
 
+  ​
+
+#####参数绑定
+
+Web API的参数绑定和mvc不同！
+
+一般情况下，Web API绑定参数符合如下规则：
+
+- 如果参数为简单类型，Web API 尝试从URI中获取。简单参数类型包含.Net源生类型(int,bool,double...),加上TimeSpan,DateTime,Guid,decimal和string.加上任何包含string转化器的类型。（More about type converters later）
+- 对复杂类型来说，Web API 试图从message body 中读取，使用[media-type](http://www.asp.net/web-api/overview/formats-and-model-binding/media-formatters) 类型。
+
+典型Web API Controller方法的例子：`HttpResponseMessage Put(int id, Product item) { ... }`
+
+从URI中获取值，WebAPI会从路由或者URI的查询参数中获取。路由如："api/{controller}/public/{category}/{id}"
+
+
+* 在参数前添加**[FromUri]**属性可以强制Web API 从URI中读取复杂类型。
+* 给参数添加**[FromBody]**属性可以迫使Web API从request body 中读取简单参数。
+  * 当一个参数标记**[FromBody]**后Web API通过Content-Type header选择格式。如content type 是“application/json” （request body是原始的Json字符串，不是Json对象)。
+  * 有而且只有一个参数允许从message body 中读取，因为request body 可能存储在一个只能读取一次的非缓冲的数据流中
+
 ###Tip
 
 
