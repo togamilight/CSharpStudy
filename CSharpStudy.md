@@ -1962,7 +1962,23 @@ Web API的参数绑定和mvc不同！
 * 在参数前添加**[FromUri]**属性可以强制Web API 从URI中读取复杂类型。
 * 给参数添加**[FromBody]**属性可以迫使Web API从request body 中读取简单参数。
   * 当一个参数标记**[FromBody]**后Web API通过Content-Type header选择格式。如content type 是“application/json” （request body是原始的Json字符串，不是Json对象)。
+
   * 有而且只有一个参数允许从message body 中读取，因为request body 可能存储在一个只能读取一次的非缓冲的数据流中
+
+  * ！且body带的参数不能有名字，如:
+
+    ```js
+    $.ajax({
+      //这样传的contentType是application/x-www-form-urlencoded
+      data:{"" : dataStr}
+    });
+    ```
+
+    ```c#
+    public HttpResponseMessage Post([FromBody] string dataStr){}
+    ```
+
+    ​
 
 ###Tip
 
@@ -2364,14 +2380,14 @@ string connStr = ConfigurationManager.ConnectionStrings["connStr"].ToString();
 
 * **ExecuteReader** ：执行查询，并返回一个 DataReader 对象。
 
-  * 注意这个方法的重载ExecuteReader(CommandBehavior)枚举，成员如下：
-    * **Default**：此查询可能返回多个结果集。执行查询可能会影响数据库状态。当不设置CommandBehavior标志时默认为Default。
-    * **SingleResult**：查询返回个结果集。
-    * **SchemaOnly**：查询仅返回列信息。当使用SchemaOnly时，用于SQL Server的.NET Framework数据提供程序将在要执行的语句前加上SET FMTONLY ON。
-    * **KeyInfo**：此查询返回列和主键信息。
-    * **SingleRow**： 查询应返回一行。
-    * **SequentialAccess**：提供一种方法，以便DataReader处理包含带有大量二进制值的列的行。SequentialAccess不是加载整行，而是使DataReader将数据作为流来加载。然后可以使用GetBytes或GetChars方法来指定开始读取操作的字节位置以及正在返回的数据的有限的缓冲区大小。
-    * **CloseConnection**：在执行该命令时，如果关闭关联的DataReader对象，则关联的Connection对象也将关闭。
+  注意这个方法的重载ExecuteReader(CommandBehavior)枚举，成员如下：
+  * **Default**：此查询可能返回多个结果集。执行查询可能会影响数据库状态。当不设置CommandBehavior标志时默认为Default。
+  * **SingleResult**：查询返回个结果集。
+  * **SchemaOnly**：查询仅返回列信息。当使用SchemaOnly时，用于SQL Server的.NET Framework数据提供程序将在要执行的语句前加上SET FMTONLY ON。
+  * **KeyInfo**：此查询返回列和主键信息。
+  * **SingleRow**： 查询应返回一行。
+  * **SequentialAccess**：提供一种方法，以便DataReader处理包含带有大量二进制值的列的行。SequentialAccess不是加载整行，而是使DataReader将数据作为流来加载。然后可以使用GetBytes或GetChars方法来指定开始读取操作的字节位置以及正在返回的数据的有限的缓冲区大小。
+  * **CloseConnection**：在执行该命令时，如果关闭关联的DataReader对象，则关联的Connection对象也将关闭。
 
 *  **ExecuteScalar** ：执行查询，并返回查询结果集中第一行的第一列（object类型）。如果找不到结果集中第一行的第一列，则返回 null 引用。
 
@@ -2379,19 +2395,165 @@ string connStr = ConfigurationManager.ConnectionStrings["connStr"].ToString();
 
 
 
-**ExecuteReader**返回一个**DataReader**对象。**DataReader是一个快速的，轻量级，只读的遍历访问每一行数据的数据流**。使用DataReader时，需要注意以下几点：
-
-* DataReader一次遍历一行数据，并返回一个包含列名字集合。
-* 第一次调用Read()方法获取第一行数据，并将游标指向下一行数据。当再次调用该方法时候，将读取下一行数据。
-* 当检测到不再有数据行时，Read()方法将返回false。
-* 通过HasRows属性，我们知道查询结果中是否有数据行。
-* 当我们使用完DataReader时，一定要注意关闭。SQL Server默认只允许打开一个DataReader。
-
-
+**ExecuteReader**返回一个**DataReader**对象。
 
 ### DataReader对象
 
+**DataReader是一个快速的，轻量级，只读的遍历访问每一行数据的数据流**。使用**DataReader**时，需要注意以下几点：
+
+- **DataReader**一次遍历一行数据，并返回一个包含列名字集合。
+- 第一次调用**Read()**方法获取第一行数据，并将游标指向下一行数据。当再次调用该方法时候，将读取下一行数据。
+- 当检测到不再有数据行时，**Read()**方法将返回**false**。
+- 通过**HasRows**属性，我们知道查询结果中是否有数据行。
+- 当我们使用完**DataReader**时，一定要注意关闭。SQL Server默认只允许打开一个**DataReader**。
+
+
+
+##### 方法
+
+* **GetOrdinal("colName")**：获取指定列名的列序号(索引号)，使用这个方法可以把经常变动的列进行固定
+* **GetName(index)**：  获取列名，参数为指定列名的序列号，返回string
+* **IsDBNull**：判断当前读取的数据是否为Null，返回类型为Bool
+* **NextResult**：当查询为批处理查询时，使用这个方法去读取下一个结果集，返回值为Bool，如果存在多个结果集，则为 true；否则为 false。
+* **Read**：读取数据
+
+
+
+##### 属性
+
+* **HasRow**：判断是否包含一行或多行，也就是判断有没有数据，返回类型为Bool。
+* **FieldCount**：获取读取的列数，返回类型为Int。
+* **IsClosed**：判断读取的数据流是否关闭。
+
+
+
+#####性能剖析
+
+读取数据性能总结：
+
+1. DataReader 索引+基于[序列号]->dr[0].ToString()	|Index-based access
+  2. DataReader 索引+基于[列名]->dr["Name"].ToString()|性能最差
+2. GetString 开头的+基于[序列号]->dr.GetString(0) |type-access
+  4. GetSql 开头的+基于[序列号]->dr.GetSqlString(0)|Provider-specific typed accessor 
+  5. GetOrdinal()通过列名获取这个列的序列号 |这个方法在提高性能上面有作用
+
+性能（4）-->（3）-->（1）-->（2） 
+
+
+
 * 用`reader["列名"]`获取字段很浪费性能，应该在循环外用`int c1 = reader.GetOrdinal("列名")`获取列序号，然后再在循环中用`reader[c1]`获取字段
+* **SqlDataReader**是连接相关的，**SqlDataReader**中的查询结果并不是放在程序中，而是放在数据库服务器中，**SqlDataReader**只是相当于一个指针（游标），只能读取当前游标指向的行，连接断开就不能再读取。这样无论查询结果有多少条，对程序占用的内存都几乎没有影响。但**SqlDataReader**对于小数据量的数据来说带来的只有麻烦。 
+
+
+### 异步执行命令
+
+**异步执行的根本思想是，在执行命令操作时，无需等待命令操作完成，可以并发的处理其他操作。**ADO.NET提供了丰富的方法来处理异步操作，**BeginExecuteNonQuery**和**EndExcuteNonQuery**就是一对典型的为异步操作服务的方法。**BeginExecuteNonQuery**方法返回**System.IAsyncResult**接口对象。我们可以根据**IAsyncResult**的**IsCompleted**属性来轮询（检测）命令是否执行完成。
+
+```C#
+using (SqlConnection conn = new SqlConnection(connStr.ConnectionString)){
+  conn.Open();
+  SqlCommand cmd = new SqlCommand(strSQL.ToString(), conn);
+  IAsyncResult pending = cmd.BeginExecuteNonQuery();//开始执行异步操作
+  double time = 0;
+  //检查异步处理状态
+  while (pending.IsCompleted == false){
+    System.Threading.Thread.Sleep(1);
+    time++;
+    Console.WriteLine("{0}s", time * 0.001);
+  }
+  if (pending.IsCompleted == true){
+    Console.WriteLine("Data is inserted completely...\nTotal coast {0}s", time * 0.001);
+  }
+  cmd.EndExecuteNonQuery(pending);//结束异步操作
+}
+```
+
+
+
+### Parameter对象（SqlParameter）
+
+##### 属性
+
+- **DbType:** 获取或设置参数的数据类型。
+- **Direction:** 获取或设置一个值，该值指示参数是否只可输入、只可输出、双向还是存储过程返回值参数。
+- **IsNullable:** 获取或设置一个值，该值指示参数是否可以为空。
+- **ParamteterName:** 获取或设置DbParamter的名称。
+- **Size:** 获取或设置列中数据的最大大小。
+- **Value:** 获取或设置该参数的值。
+
+##### 命令对象添加参数集合的几种方法
+
+* **AddWithValue**
+* **Add**
+* **AddRange**
+
+```C#
+using (SqlConnection connection = new SqlConnection("")){
+      SqlCommand command = connection.CreateCommand();
+      command.CommandText = "";
+ 
+      //可以使用这种方式添加多个参数，不过方式不够好
+      command.Parameters.Add("@name", SqlDbType.NVarChar).Value = "yang"; //第一种方式
+      command.Parameters.Add("@age", SqlDbType.Int).Value = 888;
+      command.Parameters.Add("@address", SqlDbType.NVarChar, 100).Value = "Jiang Su";
+ 
+      //这种方式直接给定参数名和参数就可以了，可操作性比较差
+      command.Parameters.AddWithValue("@name", "yang");
+      command.Parameters.AddWithValue("@age", 888).SqlDbType = SqlDbType.Int;
+      command.Parameters.AddWithValue("@address", "Jiang su").SqlDbType = SqlDbType.NVarChar;
+ 
+      //直接使用参数集合添加你需要的参数，推荐这种写法
+      SqlParameter[] parameters = new SqlParameter[]{
+          new SqlParameter("@name",SqlDbType.NVarChar,100){Value = "yang"},
+          new SqlParameter("@age",SqlDbType.Int,2){Value = 888},
+          new SqlParameter("@address",SqlDbType.NVarChar,20){Value = "Jiang Su"}, 
+      };
+      command.Parameters.AddRange(parameters);  //参数也可以是一个Array数组，如果采用数组参数代码的可读性和扩展性就不是那么好了
+ 
+      //当我们把参数都添加好之后，会生成一个“SqlParameterCollection”集合类型，相当于参数的集合
+      //那么我们就可以对这些参数进行修改和移除了
+      //说穿了“SqlParameterCollection”内部其实是一个List<SqlParameter>的集合，只是它里面的复杂度比较高，考虑的很全面
+      command.Parameters[0].Value = "hot girl";
+      command.Parameters[0].Size = 200;
+  } 
+```
+
+###DataAdapter
+
+ADO.NET提供了基于非连接的核心组件：DataSet。DataSet组件让我们可以很愉快地在内存中操作以表为中心的数据集合，就好比操作数据库中的表一样。**它为外部数据源与本地DataSet集合架起了一座坚实的桥梁，将从外部数据源检索到的数据合理正确的调配到本地的DataSet集合中**
+
+![img](http://images.cnblogs.com/cnblogs_com/liuhaorain/355410/r_DataAdapter.png)
+
+从上图我们可以清楚的知道，当我查询Customer信息，**DataAdapter**首先将构造一个**SelectCommand**实例（本质就一个Command对象），然后检查是否打开连接，如果没有打开连接则打开连接，紧接着调用**DataReader**接口检索数据，最后根据维护的映射关系，将检索到得数据库填充到本地的**DataSet**或者**DataTable**中。同理，我们需要更新数据源时，**DataAdatper**则将本地修改的数据，跟据映射关系，构造**InsertCommand**，**UpdateCommnad**，**DeleteCommand**对象，然后执行相应的命令。
+
+**DataAdapter**主要有三大功能：
+
+- **数据检索：**尽可能用最简单的方法填充数据源到本地DataSet或者DataTable中。细致的说，DataAdapter用一个DataReader实例来检索数据，因此你必须提供一个Select查询语句以及一个连接字符串。
+- **数据更新：**将本地修改的数据返回给外部的数据源相对来说稍微复杂一点。即使，从数据库查询数据时，我们仅仅只需要一条基本的Select语句，而更新数据库则需要区分Insert,Update,Delete语句。
+- **表或列名映射：**维护本地DataSet表名和列名与外部数据源表名与列名的映射关系。
+
+
+
+##### 重要成员
+
+- **SelectComand属性：**获取或设置用于在数据源选择记录的命令。
+- **UpdateCommand属性：**获取或设置用于更新数据源中的记录的命令。
+- **DeleteCommand属性：**获取或设置用于从数据源中删除记录的命令。
+- **InsertCommand属性：**获取或设置用于将新记录插入数据源中的命令。
+- **Fill()：**填充数据集。
+- **Update()：**更新数据源。
+
+例子
+
+```C#
+using (SqlConnection conn = new SqlConnection(connStr)) {
+  SqlDataAdapter ada = new SqlDataAdapter(selCmdStr, conn);
+  				   //= new SqlDataAdapter(command);
+  				   //= new SqlDataAdapter(selCmdStr, connStr);
+  DataSet ds = new DataSet();
+  ada.Fill(ds);
+}
+```
 
 
 
