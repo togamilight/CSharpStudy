@@ -1782,7 +1782,7 @@ Areas是实现Asp.net MVC 项目模块化管理的一种简单方法。
 
 ###关于重定向
 
-* 重定向与转发的区别
+* **重定向与转发的区别**
   1. 重定向后，浏览器上的地址发生改变，转发则不变
   2. 重定向实际发生了两次请求，转发只有一次
      * 重定向：发送请求 -->服务器运行-->响应请求，返回给浏览器一个新的地址与响应码-->浏览器根据响应码，判定该响应为重定向，自动发送一个新的请求给服务器，请求地址为之前返回的地址-->服务器运行-->响应请求给浏览器
@@ -1792,6 +1792,15 @@ Areas是实现Asp.net MVC 项目模块化管理的一种简单方法。
      转发：以前的request中存放的变量不会失效，就像把两个页面拼到了一起。
 
 重定向后，是一个新的请求，原来放在request请求的**复杂对象会丢失**，比如：集合。但**简单的对象**可以传递，比如：字符串，数字
+
+* **重定向跳出Area**
+
+  ```c#
+  return RedirectToRoute(new { area = "name", controller = "name", action = "name" });
+  return RedirectToAction("actionName", "controllerName", new {area = "areaName"});
+  ```
+
+  ​
 
 ### WebAPI
 
@@ -2018,7 +2027,19 @@ Web API的参数绑定和mvc不同！
   }
   ```
 
-  ​
+* 获取web.config里的appSettings
+
+  ```xml
+  <appSettings>
+  	<add key="key" value=""></add>
+  </appSettings>
+  ```
+
+  ```c#
+  string value = System.Configuration.ConfigurationManager.AppSettings["key"];
+  ```
+
+* 在cshtml中使用`@Session["key"]`得到的中文会乱码。对于js，可以先在html中用input的value存储该值，再用js读取input的value，可解决乱码，原因不明
 
 
 # ADO.NET
