@@ -654,7 +654,7 @@ var tom = new {Name = "Tom", Age = 9};	//不能加string和int
 * 属性的私有只读字段
   * 重写的`Equals、GetHsahCode和ToString`方法
 
-因为所有属性是只读的，所以只有这些属性是不易变的，那么匿名类型就是不易变的
+因为**所有属性是只读**的，所以只要这些属性是不易变的，那么匿名类型就是不易变的
 
 
 
@@ -1793,15 +1793,6 @@ Areas是实现Asp.net MVC 项目模块化管理的一种简单方法。
 
 重定向后，是一个新的请求，原来放在request请求的**复杂对象会丢失**，比如：集合。但**简单的对象**可以传递，比如：字符串，数字
 
-* **重定向跳出Area**
-
-  ```c#
-  return RedirectToRoute(new { area = "name", controller = "name", action = "name" });
-  return RedirectToAction("actionName", "controllerName", new {area = "areaName"});
-  ```
-
-  ​
-
 ### WebAPI
 
 * **什么是WebAPI？**
@@ -1978,7 +1969,7 @@ Web API的参数绑定和mvc不同！
 
     ```js
     $.ajax({
-      //这样传的contentType是application/x-www-form-urlencoded
+      //contentType是application/x-www-form-urlencoded(默认)
       data:{"" : dataStr}
     });
     ```
@@ -2027,6 +2018,7 @@ Web API的参数绑定和mvc不同！
   }
   ```
 
+* 对于DateTime类型，LINQ to Entities 不支持指定的类型成员“Date”。只支持初始值设定项、实体成员和实体导航属性。
 * 获取web.config里的appSettings
 
   ```xml
