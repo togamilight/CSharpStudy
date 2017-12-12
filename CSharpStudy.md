@@ -684,6 +684,10 @@ var v = new {person.Name}
 
 
 
+# Lambda表达式
+
+* 与匿名方法类似，表达式的类型本身不是委托类型，但它可以通过多种方式隐式或显示转换为委托类型
+
 # Asp .Net MVC5
 
 ### 控制器Controller
