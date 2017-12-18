@@ -3828,3 +3828,24 @@ using (Font font3 = new Font("Arial", 10.0f), font4 = new Font("Arial", 10.0f))
   ```
 
   ​
+
+* linq 左连接
+
+  ```c#
+  //linq to Entity和linq to Object最好不要混用，会报错
+  var result = from o in ois
+  join s in ships
+  on o.enter_id equals s.enter_id.ToString() into grp1
+  join e in eehas
+  on o.enter_id equals e.enter_id into grp2
+  from g1 in grp1.DefaultIfEmpty()
+  from g2 in grp2.DefaultIfEmpty()
+  select new {
+    o,
+    carry = grp1.Distinct().Count(),
+    //对于linq to Object，对于左连接得来的group的元素，要判断是否为null再使用
+    assessment_level = g2 == null ? "" : g2.assessment_level
+  };
+  ```
+
+  ​
