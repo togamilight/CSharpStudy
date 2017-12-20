@@ -2008,6 +2008,23 @@ Web API的参数绑定和mvc不同！
     public HttpResponseMessage Post([FromBody] string dataStr){}
     ```
 
+    也可以用dynamic接收
+
+    ```js
+    $.ajax({
+      contentType: 'application/json',    //必须这样
+      data: dataStr 	//必须这样
+    });
+    ```
+
+    ```c#
+    using Newtonsoft.Json.Linq;
+    public HttpResponseMessage Post(dynamic data){
+      //解析出复杂对象
+      var myObject = ((JObject)data.myObject).ToObject<MyClass>();
+    }
+    ```
+
     ​
 
 ###Tip
@@ -3828,6 +3845,8 @@ using (Font font3 = new Font("Arial", 10.0f), font4 = new Font("Arial", 10.0f))
   ```
 
   ​
+
+
 
 * linq 左连接
 
