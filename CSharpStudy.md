@@ -3868,3 +3868,23 @@ using (Font font3 = new Font("Arial", 10.0f), font4 = new Font("Arial", 10.0f))
   ```
 
   ​
+
+* js手机端自定义tap事件
+
+  ```js
+  //自定义tap
+  $(document).on("touchstart", function(e) {
+    if(!$(e.target).hasClass("disable")) $(e.target).data("isMoved", 0);
+  });
+  $(document).on("touchmove", function(e) {
+    if(!$(e.target).hasClass("disable")) $(e.target).data("isMoved", 1);
+  });
+  $(document).on("touchend", function(e) {
+    if(!$(e.target).hasClass("disable") && $(e.target).data("isMoved") == 0) 		
+  		$(e.target).trigger("tap");
+  });
+  //使用
+  $("").on("tap", function(){});
+  ```
+
+  ​
