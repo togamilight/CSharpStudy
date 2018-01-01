@@ -687,6 +687,74 @@ var v = new {person.Name}
 # Lambda表达式
 
 * 与匿名方法类似，表达式的类型本身不是委托类型，但它可以通过多种方式隐式或显示转换为委托类型
+* 参数列表必须全是显示类型或全是隐式类型
+
+
+
+# 表达式树
+
+是由对象构成的树，树中的每个节点本身是一个表达式
+
+* `System.Linq.Expressions`命名空间包含了代表表达式的各个类，都继承自`Expression`——一个抽象的、主要包含一些静态工厂方法的类，这些方法用于创建其它表达式类的实例
+
+  `Expression`类也包含两个属性：
+
+  * **Type**：代表表达式求值后的.NET类型
+  * **NodeType** ：返回所代表的表达式的种类，是`ExpressionType`枚举的成员，包括LessThan,Multiply,Invoke等
+
+
+
+* Lambda表达式提供了编译时检查的能力，而表达式树可以将执行模型从你所需的逻辑中提取出来。两者合并，产生了"进程外"LINQ提供器，如LINQ to SQL，编译器将C#的Lambda表达式查询代码编译成使用表达式树的IL代码，使用时再转换为目标平台上的本地语言（SQL）
+  * LINQ to Objects则是直接编译成使用委托的IL代码，直接在CLR中执行
+  * 一般情况下，转换会试图在目标平台上执行所有逻辑，但也可能利用表达式树的编译功能在本地执行表达式的一部分，在别的地方执行另一部分
+  * 编译器保证Lambda能转换成一个有效的表达式树，但无法保证该树在目标平台上有效使用
+
+
+
+### 将表达式树编译成委托
+
+`LambdaExpression`继承自`Expression`，又派生出`Expression<TDelegate>`。该泛型类以静态类型的方式标识了表达式的返回类型和参数
+
+```C#
+Expression firstArg = Expression.Constant(2);
+Expression secondArg = Expression.Constant(3);
+Expression add = Expression.Add(firstArg, secondArg);
+
+Func<int> compiled = Expression.Lambda< Func<int> >(add).Compile();	//调用得到5
+```
+
+### 将Lambda表达式转换成表达式树
+
+```C#
+//简单的
+Expression<Func<int>> return5 = () => 5;
+
+//复杂的
+Expression< Func<string, string, bool> > expression = (x, y) => x.StartsWith(y);
+//相当于↓
+//构造一个方法调用表达式树
+MethodInfo method = typeof(string).GetMethod("StartsWith", new[]{typeof(string)});
+var target = Expression.Parameter(typeof(string), "x");
+var methodArg = Expression.Parameter(typeof(string), "y");
+
+Expression call = Expression.Call(target, method, new[]{methodArg});
+	
+var lambdaParameters = new[]{target, methodArg};
+var lambda = Expression.Lambda<Func<string, string, bool>>(call, lambdaParameters);
+```
+
+* **注意**：并非所有Lambda表达式都能转换为表达式树，带有一个语句块的（即使只有一个return语句）不行，带有赋值操作的也不行，只有对单个表达式进行求值的Lambda才可以。还有其它限制。。。
+
+
+
+# 扩展方法
+
+* 特征：
+  * 必须在一个非嵌套的，非泛型的静态类中（所以必须是静态方法）
+  * 至少有一个参数
+  * **第一个参数**必须有`this`作前缀，不能有其它修饰符(ref/out)，不能是指针类型
+* 当要调用一个实例方法时，编译器会先在真正的实例方法中寻找，找不到时就检查当前和导入的所有命名空间中的所有扩展方法，进行匹配
+* 当变量的值为空引用时，不能调用实例方法，会报`NullReferenceException`异常，但可以调用扩展方法。可以写出类似`object.IsNull()`的方法
 
 # Asp .Net MVC5
 
