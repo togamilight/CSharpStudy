@@ -770,6 +770,16 @@ var lambda = Expression.Lambda<Func<string, string, bool>>(call, lambdaParameter
 
 **流式传输**也叫**惰性求值**，**缓冲传输**也叫**热情求值**，.NET提供的扩展方法会尽量对数据进行**流式**，或者说**管道**传输，每要求一个数据时，才会从它链接的迭代器那里获取一个数据进行处理并返回。当然对于反转、排序等操作就必须用**缓冲**传输。这两种方式都属于**延迟执行**，在第一次调用`MoveNext()`前不做任何事情
 
+有**延迟执行**，当然也有**立即执行**，一般来说，返回另外一个序列的操作(通常是`IEnumerable<T>`或`IQueryable<T>`使用**延迟执行**，返回单一值的运算使用**立即执行**
+
+
+
+# LINQ
+
+**序列**是LINQ的基础
+
+
+
 # Asp .Net MVC5
 
 ### 控制器Controller
@@ -2148,6 +2158,7 @@ Web API的参数绑定和mvc不同！
   ```
 
 * 对于DateTime类型，LINQ to Entities 不支持指定的类型成员“Date”。只支持初始值设定项、实体成员和实体导航属性。
+
 * 获取web.config里的appSettings
 
   ```xml
@@ -2161,6 +2172,22 @@ Web API的参数绑定和mvc不同！
   ```
 
 * 在cshtml中使用`@Session["key"]`得到的中文会乱码。对于js，可以先在html中用input的value存储该值，再用js读取input的value，可解决乱码，原因不明
+
+* 在cshtml中，使用Razor表达式从`ViewData，ViewBag，Session`等拿到的中文字符串，直接放进js里时，会被转换成形如"&#28165;"的字符，这是html entity，
+  可以通过将其先放进html页面里，再获取来将其转换回来。例如
+
+  ```js
+  @{string userCode = (Session["UserCode"] ?? string.Empty).ToString();}
+  var userCode = $("<div/>").html("@userCode").text();
+
+  //原生js
+  var tmpDiv = document.createElement("div"); 
+  tmpDiv.innerHTML = "@userCode"; 
+  var userCode = tmpDiv.innerHTML
+
+  ```
+
+  ​
 
 
 # ADO.NET
