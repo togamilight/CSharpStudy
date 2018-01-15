@@ -776,7 +776,32 @@ var lambda = Expression.Lambda<Func<string, string, bool>>(call, lambdaParameter
 
 # LINQ
 
-**序列**是LINQ的基础
+* **序列**是LINQ的基础
+* 编译器会将查询表达式转译为C#代码(一般是扩展方法的调用)，是以一种机械的方式来转换的，不会去理解代码、应用类型引用、检查方法调用的有效性或执行编译器要执行的任何正常工作，这些都在**转换完成之后**执行
+  * 通俗地说，LINQ表达式被粗暴地直接转换成方法的调用的代码，这转译不依赖于任何特定类型（不需要实现IEnumerable之类的接口），仅依赖于方法名称和参数，然后再来判断这个代码所能调用的是哪个方法，因此，我们可以自己实现一些同名方法来顶替原来的方法被调用
+
+
+
+### Cast/OfType
+
+这两个操作符都可以处理任意非类型化的序列（它们是非泛型IEnumerable类的扩展方法），并返回强类型的序列，把每个元素都转换成目标类型，遇到不是正确类型的元素时，**Cast**抛出异常，**OfType**跳过，只有**Cast**是LINQ表达式语法直接支持的
+
+```C#
+var list = new ArrayList{"First", "Second", "Third"};
+IEnumerable<string> strs = list.Cast<string>();
+
+list = new ArrayList{1, "NaN", 2, 3}
+IEnumerable<int> ints = list.OfType<int>();
+
+//LINQ
+var list = new ArrayList{"First", "Second", "Third"};
+var strs = from string entry in list select entry.Substring(0, 3);
+//转译成
+list.Cast<string>().Select(entry => entry.Substring(0,3));
+```
+
+* 两个操作符都对数据进行流处理，在获取元素时才转换
+* 只允许**一致性、引用和拆箱**转换
 
 
 
