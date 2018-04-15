@@ -802,6 +802,7 @@ list.Cast<string>().Select(entry => entry.Substring(0,3));
 
 * 两个操作符都对数据进行流处理，在获取元素时才转换
 * 只允许**一致性、引用和拆箱**转换
+* **Select**扩展方法只适用于**IEnumerable<T>**，而不能用于**IEnumerable**，需要用**Cast**进行转换
 
 
 
@@ -2142,7 +2143,47 @@ Web API的参数绑定和mvc不同！
     }
     ```
 
-    ​
+  * 在webApi中用post接收大量基础类型数据，包括数组
+
+    ```c#
+    public HttpResponseMessage PostXXX(dynamic data){
+     int[] array = (data.array as JArray).ToObject<int[]>(); 
+    }
+    //数据只有数组时，用参数int[]直接接收就可以了,复杂类型的数组则用List<T>
+    ```
+
+#####WebApi中的NewtonSoft.Json
+
+- 普通的dynamic对象，读取未存入的属性，会出现异常，而WebApi中通过post传参的到的dynamic对象则不会，大概是因为它是NewtonSoft.Json.Linq.JObject类型的
+
+  ```c#
+  dynamic data = new ExpandoObject();
+  string str = data.str ?? "";	//异常：“System.Dynamic.ExpandoObject”未包含“str”的定义
+
+  public HttpResponseMessage LockApply(dynamic data){ //data是NewtonSoft.Json.Linq.JObject类型
+      string userCode = data.userCode ?? "";	//正常
+  }
+  ```
+
+- 反序列化字符串
+
+  ```c#
+  //反序列化为匿名类型
+  var data = new { his = new history_lock_ship_infor(), rec = new record_ship_gates(), 
+                  userName = string.Empty, userCode = string.Empty };
+  data = JsonConvert.DeserializeAnonymousType(dataStr, data);
+
+  //反序列化为Object
+  var object = JsonConvert.DeserializeObject(dataStr);
+  ```
+
+- 将dynamic转换为具体类型
+
+  ```c#
+  var user = ((JObject)dataStr).ToObject<vf_users>();
+  ```
+
+  ​
 
 ###Tip
 
@@ -2767,6 +2808,51 @@ using (SqlConnection conn = new SqlConnection(connStr)) {
   ```
 
 * insert/update/delete每次只能作用于一张表
+
+
+
+
+
+
+# Entity Framework
+
+ ## Tips
+
+### DbContext.Database.SqlQuery<T>(string)
+
+T中的属性必须与必须与查询出来的语句完全一致，否则会出现异常，除非带有[NotMapped]注解，但是此时该属性即使有查到也不会被赋值
+
+###DbSet
+
+* 在**DbContext**中，可以事先设定各个实体的**DbSet**，也可以通过**DbContext.Set<TEntity>()**动态设置,而且,如果事先已经设有该实体的**DbSet**属性,将会得到该属性而不会创建重复的!
+
+### Linq to Entities的数字与字符串的转换
+
+- 在Linq to Entities，数字与字符串无法直接比较，而`ToString()`方法也无法调用
+- 对于**SqlServer**，可以使用`System.Data.Entity.SqlServer` 命名空间中的`SqlFunctions.StringConvert(decimal?/double?).Trim()`，`Trim()`是去除前后空格
+- 但是MySql无法使用上述方法，但是也可以用`myInt + ""`来是数字变成字符串。。。。
+
+### EF直接更新的方法
+
+```c#
+using(var dbContext = new MyDbContext()){
+    //更新所有属性
+    var user = new User(){ id = 1, name = "John", age = 17};	//根据id来修改的
+    dbContext.Entry<User>(user).State = System.Data.Entity.EntityState.Modified;
+    
+    //更新单个属性
+    dbContext.Users.Attach(user);
+    dbContext.Entry<User>(user).Property(u => u.age).IsModified = true;
+    
+    //更新单个属性的另一种方式
+    //System.Data.Entity.Infrastructure.IObjectContextAdapter
+    var stateEntry =					((IObjectContextAdapter)dbContext).ObjectContext.ObjectStateManager.GetObjectStateEntry(user);
+    stateEntry.SetModifiedProperty("name");
+    
+    db.SaveChanges();
+}
+```
+
 
 
 
@@ -4022,3 +4108,19 @@ using (Font font3 = new Font("Arial", 10.0f), font4 = new Font("Arial", 10.0f))
   ```
 
   ​
+
+### JS中Date的怪事
+
+当使用`new Date(str)`来计算日期时，连接日期的字符为“-”的话，月份和日期加不加0得到的时间将是不同的，加了是8点，不加是0点，用“\”来连接则都为0点：
+
+```js
+var srtDate = "2018-04-01";	//Sun Apr 01 2018 08:00:00 GMT+0800 (中国标准时间)
+new Date(srtDate);	
+//2018-12-01 Sat Dec 01 2018 08:00:00 GMT+0800 (中国标准时间)
+//2018-4-1, 2018-04-1, 2018-4-01, 2018/04/01	Sun Apr 01 2018 00:00:00 GMT+0800 (中国标准时间) 
+
+//所以比较日期时建议用"/"替换"-"
+var strDate1 = strDate.replace(/-/g, "/");
+```
+
+推测原因：应该是使用形如“yyyy-MM-dd”的标准格式时间便是8点
