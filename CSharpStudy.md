@@ -934,6 +934,10 @@ public ActionResult SaveEmployee([ModelBinder(typeof(MyEmployeeModelBinder))]Emp
                                  string BtnSubmit){}
 ```
 
+* 在Action方法的参数中，当调用时没有传参时，复杂类型会初始化（用无参构造方法初始化），其它的则会赋予null，而值类型无法赋予null会报异常
+
+
+
 ### Entity Framework
 
 1. 连接SQL SERVER ,创建数据库 "SalesERPDB"
@@ -1079,6 +1083,23 @@ public ActionResult SaveEmployee([ModelBinder(typeof(MyEmployeeModelBinder))]Emp
   [FirstNameValidation]
   public string FirstName { get; set; }
   ```
+
+
+
+
+### 手动校验数据
+
+```C#
+var validResults = new List<ValidationResult>();
+string msg = "";
+//这里最后的true表示校验所有属性，false或无则只会校验Required
+if (!Validator.TryValidateObject(t, new ValidationContext(t), validResults, true)) {
+  foreach (var result in validResults) {
+      msg += result.ErrorMessage + "\n";
+  }
+}
+```
+
 
 
 
@@ -2833,6 +2854,8 @@ T中的属性必须与必须与查询出来的语句完全一致，否则会出�
 - 但是MySql无法使用上述方法，但是也可以用`myInt + ""`来是数字变成字符串。。。。
 
 ### EF直接更新的方法
+
+Entry将会强制更新所有属性，性能会比较差
 
 ```c#
 using(var dbContext = new MyDbContext()){
