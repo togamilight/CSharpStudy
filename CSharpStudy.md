@@ -3977,6 +3977,40 @@ $("#myDataTable").DataTable({
 
   就可以使一个`columnDefs.render`对应多个列了，或者在没有创建`columns`的时候使用，更加灵活，`columns.render`一对一的更加有针对性
 
+
+
+# Bootstrap
+
+## datepicker
+
+### 与modal的冲突
+
+当在modal中使用datepicker时，datepicker的显示和隐藏会触发modal的显示隐藏事件，解决方法是阻止其向上冒泡
+
+```C#
+//阻止datepicker的show/hide事件向上冒泡，因为会触发modal的事件
+$document.on("show", ".datepicker", function (e) {
+	//e.preventDefault();
+	e.stopPropagation();
+});
+$document.on("hide", ".datepicker", function (e) {
+	//e.preventDefault();
+	e.stopPropagation();
+});
+//或者
+$(".datepicker").datepicker().show(function (e) {
+    //e.preventDefault();
+    e.stopPropagation();
+}).hide(function (e) {
+    //e.preventDefault();
+    e.stopPropagation();
+});
+```
+
+
+
+
+
 # Tip
 
 * `System.Enum, System.ValueType`本身都是引用类型
