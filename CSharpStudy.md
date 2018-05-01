@@ -3979,6 +3979,28 @@ $("#myDataTable").DataTable({
 
 
 
+
+### 获取行的原始数据
+
+```js
+//在按钮上设置行号
+$('#example').dataTable({
+	"columns": [{
+          "data":"name", 
+          "render" : function ( data, type, row, meta) {
+        	return  '<button id="btnEdit" data-rowindex="' + meta.row + '">编辑</button>';
+          }
+      	}]
+});
+
+//然后根据元素取出行号，获取数据
+var rowIndex = $('#btnEdit').attr('data-rowindex');
+$('#example').DataTable().rows(rowIndex).data()[0];
+```
+
+
+
+
 # Bootstrap
 
 ## datepicker
@@ -4165,6 +4187,23 @@ using (Font font3 = new Font("Arial", 10.0f), font4 = new Font("Arial", 10.0f))
   ```
 
   ​
+
+* 使a标签不进行跳转
+
+  ```html
+  <a href="javascript:void(0);"></a>
+  <a href="#"></a>
+  ```
+
+  第一种方式利用伪协议：
+
+  > 伪协议不同于因特网上所真实存在的协议，如http://，https://，ftp://，
+  >
+  > 而是为关联应用程序而使用的.如:tencent://(关联QQ)，data:(用base64编码来在浏览器端输出二进制文件)，还有就是javascript:
+  >
+  > 我们可以在浏览地址栏里输入"javascript:alert('JS!');"，点转到后会发现，实际上是把javascript:后面的代码当JavaScript来执行，并将结果值返回给当前页面。
+
+  比较推荐第二种方式，但是会跳转到页面顶部，可以在click方法中`return false;`来解决
 
 ### JS中Date的怪事
 
