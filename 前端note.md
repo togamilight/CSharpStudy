@@ -4,3 +4,4 @@
 <label><input type="radio" name="name"> text</label>
 <!--或者这样-->
 <input type="radio" id="myRadio" name="name"> <label for="myRadio">text</label>
+```
