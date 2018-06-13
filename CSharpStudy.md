@@ -1,10 +1,10 @@
 ﻿# 类型
 
-###值类型
+### 值类型
 
 ​	结构体`struct`、枚举`enum`
 
-###引用类型
+### 引用类型
 
 ​	类`class`、接口`interface` 、委托`delegate`
 
@@ -353,7 +353,7 @@ int y = x ?? 1;
 
 * 先找完全匹配的，找不到则找最接近，类型转换最少的
 
-###扩展方法
+### 扩展方法
 
 * 必须位于静态类(一般名为SomeTypeExtension)，且方法必须是`public static`，第一个参数必须是要扩展的类型，用`this`修饰，例子:
 
@@ -422,7 +422,7 @@ class Class2<T> : Interface1<T> {}
 * 给泛型类赋不同的泛型实例出来的对象相当于属于不同的类，不共享静态成员
 * 泛型迭代，见3.4.3
 
-###反射泛型
+### 反射泛型
 
 * 对泛型类型使用`typeof`：
   * `typeof(List<>); typeof(Dictionary<,>); typeof(List<int>); typeof(Dictionary<string, int>);`
@@ -2885,7 +2885,7 @@ using(var dbContext = new MyDbContext()){
 
 
 
-##第一版
+## 第一版
 
 仅使用asp.net mvc，数据库连接使用ado.net
 
@@ -3153,7 +3153,7 @@ Dao层和Service层都实现于接口，然后使用Unity进行依赖注入
 
 # IBatis
 
-##配置文件
+## 配置文件
 
 iBatis含有三种配置文件：
 
@@ -3163,7 +3163,7 @@ iBatis含有三种配置文件：
 
 
 
-###SqlMap.config
+### SqlMap.config
 
 示例
 
@@ -3284,7 +3284,7 @@ iBatis含有三种配置文件：
 </sqlMap>
 ```
 
-####resultMaps
+#### resultMaps
 
 定义了数据库字段名与实体类属性名之间的关系。当然，如果你数据库字段名与实体类属性名完全一样，那么resultMaps部分是可以省略的。**另外要注意一点，ResultMap的列比你查询的列不能少，也不能多。它不会说，ResultMap里映射的列多了，该属性就自动将select返回的列自动置null，而是直接所有列都不映射赋值。也就是说，Person表有Id，Name，Age3列，如果你只想要SELECT两个列(Id,Name)，那么ResultMap里面的3列映射没用了，你必须另外搞一个ResulpMap只映射两列的**
 
@@ -3459,7 +3459,7 @@ public class Mapper : IMapper{
 }
 ```
 
-###SqlMapper的数据库操作方法
+### SqlMapper的数据库操作方法
 
 1. **查询select**
 
@@ -3503,7 +3503,7 @@ public class Mapper : IMapper{
 
 4. **delete**
 
-##SQL语句
+## SQL语句
 
 ### 一对多关系(嵌套类)
 
@@ -3606,7 +3606,7 @@ public class Mapper : IMapper{
 
 
 
-####其它
+#### 其它
 
 - **对SQL片段的引用**
 
@@ -3629,7 +3629,7 @@ public class Mapper : IMapper{
 
 ## 输出SQL语句
 
-###输出到控制台
+### 输出到控制台
 
 在web.config进行配置
 
