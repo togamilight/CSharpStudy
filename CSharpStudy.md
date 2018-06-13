@@ -936,6 +936,21 @@ public ActionResult SaveEmployee([ModelBinder(typeof(MyEmployeeModelBinder))]Emp
 
 * 在Action方法的参数中，当调用时没有传参时，复杂类型会初始化（用无参构造方法初始化），其它的则会赋予null，而值类型无法赋予null会报异常
 
+#### 传递空值转换为null问题
+如果传递的值为空字符串，绑定时，MVC会自动将其转换为null，解决方法如下：
+1. 在Model的不想转换的字段上添加注解`[DisplayFormat(ConvertEmptyStringToNull = false)]` 
+2. 自定义ModelBinder
+```CSharp
+public class EmptyStringModelBinder : DefaultModelBinder {
+    public override object BindModel(ControllerContext controllerContext, ModelBindingContext bindingContext) {
+        bindingContext.ModelMetadata.ConvertEmptyStringToNull = false;
+        Binders = new ModelBinderDictionary() { DefaultBinder = this };
+        return base.BindModel(controllerContext, bindingContext);
+    }
+}
+//使用
+public ActionResult MyAction([ModelBinder(typeof(EmptyStringModelBinder))] MyModel model) {}
+```
 
 
 ### Entity Framework
@@ -1045,7 +1060,20 @@ public ActionResult SaveEmployee([ModelBinder(typeof(MyEmployeeModelBinder))]Emp
    }
    ```
 
-2. 在控制器Action方法里用`ModelState.IsValid`判断参数是否绑定成功，不成功则用`RedirectToAction("View")`返回View
+2. 在控制器Action方法里用`ModelState.IsValid`判断参数是否绑定成功，不成功则用`RedirectToAction("View")`返回View 
+- ** 也可以直接在Action方法里获取错误信息
+    ```CSharp
+    //校验数据
+    if (!ModelState.IsValid) {
+    	string msg = "";
+    	foreach (var fieldState in ModelState) {
+		foreach (var error in fieldState.Value.Errors) {
+            		msg += error.ErrorMessage + "\n";
+        	}
+    	}
+    	throw new ValidationException(msg);
+    }
+    ```
 
 3. 在View里用`@Html.ValidationMessage("Name")`显示错误信息（`Html`是`HtmlHelper`类的实例。）
 
