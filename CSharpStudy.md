@@ -1,4 +1,4 @@
-﻿# 类型
+# 类型
 
 ### 值类型
 
@@ -15,7 +15,7 @@
 
 ### 装箱和拆箱
 
-```c#
+```CSharp
 int i = 5;
 object o = i;		//装箱
 int j = (int) o;	//拆箱
@@ -24,7 +24,7 @@ int j = (int) o;	//拆箱
 * 当调用值类型的`GetType()`方法是总伴随着装箱过程，因为这个方法不能被重载。同理，为一个类型的值调用`ToString()/Equals()/GetHashCode()`时，若该类型没覆盖这些方法，也会发生装箱。
 * 将值类型赋给一个接口类型的变量或者把它作为接口类型的参数来传递时也会装箱
 
-```C#
+```CSharp
 IComparable x = 5;
 ```
 
@@ -89,7 +89,7 @@ IComparable x = 5;
 
   当类实现多个接口时，并且接口中包含相同的方法签名，此时使用显式接口实现。即使没有相同的方法签名，仍推荐使用显式接口，因为可以标识出哪个方法属于哪个接口。
 
-```c#
+```CSharp
 interface I1{
   void Show();
 }
@@ -102,7 +102,7 @@ object1.Show();
 
 * 显示实现接口后，仍可以非显示地再一次实现接口，在显示实现里也可以调用这个非显示实现。这时，当调用方法的对象是以接口声明时，调用显示实现，否则调用普通的实现。返回类型可以不同
 
-```C#
+```CSharp
 interface MyInterface {
   void Show();
 }
@@ -144,7 +144,7 @@ Console.ReadKey();
 
 被引用的方法的返回值类型允许是委托的返回值类型的子类（协变性）
 
-```C#
+```CSharp
 //被引用的方法
 static string Show(object o){return "";}
 //声明委托
@@ -170,7 +170,7 @@ display("abc");		//或	display.Invoke("abc");
 * 调用委托实例时，所有操作被依次调用，Invoke将返回最后一个操作的返回值。任何操作抛出异常时会阻止执行后续操作
 * 可以通过`Delegate[] delegate.GetInvocationList()`获取操作列表，来显式调用某个操作
 
-```C#
+```CSharp
 //两者等价
 myDelegate1 += myDelegate2;
 MyDelegate myDelegate3 = Delegate.Combine(myDelegate1, myDelegate2) as MyDelegate;
@@ -185,7 +185,7 @@ MyDelegate myDelegate3 = Delegate.Remove(myDelegate1, myDelegate2) as MyDelegate
 
 方法组转换为Delegate类型要用显示转换
 
-```C#
+```CSharp
 Delegate d = (MyDelegate)MyMethod;
 //或者先隐式转换成委托，在赋给Delegate类型
 MyDelegate md = MyMethod;
@@ -200,7 +200,7 @@ Delegate d = md;
 * 在值类型中编写的匿名方法，不能引用this，可以在匿名方法外将this存放在临时变量中，再在匿名方法中使用该临时变量
 * 当不需要关注参数时，可以去掉参数列表（但是对于重载成需要不同委托参数的方法会产生歧义）
 
-```C#
+```CSharp
 Action<object, EventArgs> act = delegate{};
 //可以通过给事件添加无参不执行动作的匿名参数，使其不用在每次调用前都检测是否为null
 public event EventHandler Event = delegate{};	//会损失一点点性能
@@ -216,7 +216,7 @@ public event EventHandler Event = delegate{};	//会损失一点点性能
 
 ### 事件的声明
 
-```c#
+```CSharp
 //事件的完整声明Start-----------
 //此时，该事件只能+=/-= 	add和remove必须都定义
 private MyEventHandler myEventHandler;
@@ -248,7 +248,7 @@ public event EventHandler<MyEventArgs> myEvent;
 
   ​	//在被转换的类中定义，explicit为显式，implicit为隐式
 
-  ```C#
+  ```CSharp
       public static explicit operator Monkey(Stone stone) {
           Monkey m = new Monkey(stone.age / 5);
           return m;
@@ -271,13 +271,13 @@ public event EventHandler<MyEventArgs> myEvent;
 
   * is检查的是变量所引用的实例的类型，检测父类也是true
 
-    ```c#
+    ```CSharp
     //result为false
     Object1 o = null; 
     bool result = o is Object1
     ```
 
-    ```c#
+    ```CSharp
     //result为true
     Child p = new Child();
     bool result = p is Parent;
@@ -291,7 +291,7 @@ public event EventHandler<MyEventArgs> myEvent;
 
 ​	`??`, 判断一个变量是否为null，是则返回操作符右边的值
 
-```c#
+```CSharp
 int? x = null;	//int? 可空类型，也可写成Nullable<int>
 int y = x ?? 1;
 ```
@@ -357,7 +357,7 @@ int y = x ?? 1;
 
 * 必须位于静态类(一般名为SomeTypeExtension)，且方法必须是`public static`，第一个参数必须是要扩展的类型，用`this`修饰，例子:
 
-```c#
+```CSharp
  static class IntExtension {
         public static void UtilMethod(this int a, string s) {}
     }
@@ -375,7 +375,7 @@ int y = x ?? 1;
 * 可用于方法和类，接口，结构体， 委托等(不能用于枚举)。
 * 泛型方法调用时可以不加指明类型参数，由编译器自行通过参数判断，且要么全部指明，要么全部推断
 
-```c#
+```CSharp
 void Add<T>(T a, T b){};
 class Class1<T>{}
 ```
@@ -387,7 +387,7 @@ class Class1<T>{}
     * 没有约束的类型参数只能与`null`用`==/!=`进行比较
   * `new()`：表示必须含有无参构造方法，必须是最后一个约束，不能和`struct`约束一起使用。其适用于所用值类型，所有没有显示声明构造方法的非静态、非抽象类，所有显示声明了一个公共无参构造方法的非抽象类 
 
-```c#
+```CSharp
 void Add<T>() where T : class{}
 //还可以约束构造方法
 void Add<T>() where T : new(){}	//必须含有无参构造方法
@@ -399,7 +399,7 @@ void Add<T, V>() where T : class wher V : struct{}
 
 * 有多个泛型但传入一样的类型时可能发生混淆，编译会报错。与普通方法混淆时，普通方法会覆盖泛型方法
 
-```c#
+```CSharp
 class Class1<T, V>{
   Add(T a, V b){}
   Add(V a, T b){}
@@ -411,7 +411,7 @@ object1.Add(1, 2);
 
 * 泛型接口实现时必须指定类型
 
-```c#
+```CSharp
 interface Interface1<T> {}
 class Class1 : Interface1<int>{}
 class Class2<T> : Interface1<T> {}
@@ -532,7 +532,7 @@ class Class2<T> : Interface1<T> {}
 
 # 命名空间别名
 
-```C#
+```CSharp
 //通过using来定义别名
 using WinForms = System.Windows.Forms;
 
@@ -577,7 +577,7 @@ pragma指令就是一个由`#pragma`开头的代码行所表示的预处理指�
 
 # 自动实现的属性
 
-```c#
+```CSharp
 public string Name{ get; private set; }
 ```
 
@@ -600,7 +600,7 @@ public string Name{ get; private set; }
 
 任何特定的属性只能最多指定一次
 
-```c#
+```CSharp
 Person tom3 = new Person() { Name = "Tom", Age = 9 };
 Person tom4 = new Person { Name = "Tom", Age = 9 };
 Person tom5 = new Person("Tom") { Age = 9 };
@@ -618,7 +618,7 @@ Person tom6 = new Person("Tom"){
 
 类似数组初始化程序，任何实现了`IEnumerable`的类型，只要它为初始化列表中出现的每个元素都提供了一个恰当的公有的**Add**方法，就可以使用这个特性。Add方法可以接受多个参数，只要把值放在另一对大括号中
 
-```c#
+```CSharp
 List<string> strs = new List<string>{	//加不加括号都可
     "John", "Tom", "Mario"
 };
@@ -635,7 +635,7 @@ Dictionary<string, int> nameAgeMap = new Dictionary<string, int>{
 
 ### 隐式类型的数组
 
-```C#
+```CSharp
 string[] name = {"a","b"};	//可行
 
 void MyMethod(string[] names){}
@@ -645,7 +645,7 @@ MyMethod(new []{"a", "b"});	//可行
 
 在大括号内所有表达式的编译时类型的集合中，如果所有类型都能隐式转换成其中一种类型，该类型即为数组类型。只有表达式的类型才会成为一个候选的数组类型，所以偶尔需要将一个值显示转换为一个不具体的类型，如：
 
-```c#
+```CSharp
 new[]{ new MemoryStream(), new StringWriter() }		//不行
 new[]{ (IDisposable)new MemoryStream(), new StringWriter() }	//可以
 ```
@@ -656,7 +656,7 @@ new[]{ (IDisposable)new MemoryStream(), new StringWriter() }	//可以
 
 #匿名类型
 
-```c#
+```CSharp
 var tom = new {Name = "Tom", Age = 9};	//不能加string和int
 ```
 
@@ -677,7 +677,7 @@ var tom = new {Name = "Tom", Age = 9};	//不能加string和int
 
 ### 投影初始化程序
 
-```c#
+```CSharp
 //自动将改对象的属性名Name作为匿名对象的属性名
 var v = new {person.Name}
 ```
@@ -715,7 +715,7 @@ var v = new {person.Name}
 
 `LambdaExpression`继承自`Expression`，又派生出`Expression<TDelegate>`。该泛型类以静态类型的方式标识了表达式的返回类型和参数
 
-```C#
+```CSharp
 Expression firstArg = Expression.Constant(2);
 Expression secondArg = Expression.Constant(3);
 Expression add = Expression.Add(firstArg, secondArg);
@@ -725,7 +725,7 @@ Func<int> compiled = Expression.Lambda< Func<int> >(add).Compile();	//调用得�
 
 ### 将Lambda表达式转换成表达式树
 
-```C#
+```CSharp
 //简单的
 Expression<Func<int>> return5 = () => 5;
 
@@ -760,7 +760,7 @@ var lambda = Expression.Lambda<Func<string, string, bool>>(call, lambdaParameter
 
 * 扩展方法的好处之一：可以将方法的调用链接在一起，如：
 
-  ```c#
+  ```CSharp
   var collection = Enumerable.Range(0, 10).Where(x => x % 2 != 0).Reverse();
   ```
 
@@ -786,7 +786,7 @@ var lambda = Expression.Lambda<Func<string, string, bool>>(call, lambdaParameter
 
 这两个操作符都可以处理任意非类型化的序列（它们是非泛型IEnumerable类的扩展方法），并返回强类型的序列，把每个元素都转换成目标类型，遇到不是正确类型的元素时，**Cast**抛出异常，**OfType**跳过，只有**Cast**是LINQ表达式语法直接支持的
 
-```C#
+```CSharp
 var list = new ArrayList{"First", "Second", "Third"};
 IEnumerable<string> strs = list.Cast<string>();
 
@@ -919,7 +919,7 @@ list.Cast<string>().Select(entry => entry.Substring(0,3));
 
 * 还可以通过继承`DefaultModelBinder`自定义自己的Model Binder
 
-```C#
+```CSharp
 public class MyEmployeeModelBinder : DefaultModelBinder{
   protected override object CreateModel(ControllerContext controllerContext, ModelBindingContext bindingContext, Type modelType){
     Employee e = new Employee();
@@ -979,7 +979,7 @@ public ActionResult MyAction([ModelBinder(typeof(EmptyStringModelBinder))] MyMod
 
 5. 创建Employee类的主键
 
-   ```C#
+   ```CSharp
    using System.ComponentModel.DataAnnotations;
    //添加Employee的属性，并使用Key 关键字标识主键。
    public class Employee{
@@ -997,7 +997,7 @@ public ActionResult MyAction([ModelBinder(typeof(EmptyStringModelBinder))] MyMod
 
    （完善SalesERPDAL 类）
 
-   ```C#
+   ```CSharp
    using System.Data.Entity;
    public class SalesERPDAL : DbContext{
      //DbSet表示数据库中能够被查询的所有Employee
@@ -1011,7 +1011,7 @@ public ActionResult MyAction([ModelBinder(typeof(EmptyStringModelBinder))] MyMod
 
 8. 使用
 
-   ```C#
+   ```CSharp
    //从数据库获取Employee的List
    SalesERPDAL salesDal = new SalesERPDAL();
    List<Employee> emps = salesDal.Employees.ToList();
@@ -1022,14 +1022,14 @@ public ActionResult MyAction([ModelBinder(typeof(EmptyStringModelBinder))] MyMod
 
 * 在Global.asax文件中在 Application_Start后添加以下语句，可以使模型类（Employee）改变时删除并重建数据库中对应的表：
 
-  ```C#
+  ```CSharp
   //使用Database类需要引用 “System.Data.Entity”命名空间
   Database.SetInitializer(new DropCreateDatabaseIfModelChanges<SalesERPDAL>());
   ```
 
 * 当遇到异常`System.Data.Entity.Validation.DbEntityValidationException`，“对一个或多个实体的验证失败。有关详细信息，请参阅“EntityValidationErrors”属性”时，可以捕获并查看错误信息
 
-  ```C#
+  ```CSharp
   try {}
   catch (DbEntityValidationException dbEx) {
     foreach (var validationErrors in dbEx.EntityValidationErrors) {
@@ -1050,7 +1050,7 @@ public ActionResult MyAction([ModelBinder(typeof(EmptyStringModelBinder))] MyMod
 
 1. 使用 **DataAnnotations**装饰属性
 
-   ```c#
+   ```CSharp
    public class Employee{
      [Required(ErrorMessage="Enter First Name")]
      public string FirstName { get; set; }
@@ -1089,7 +1089,7 @@ public ActionResult MyAction([ModelBinder(typeof(EmptyStringModelBinder))] MyMod
 
   1. 创建自定义验证
 
-  ```C#
+  ```CSharp
   using System.ComponentModel.DataAnnotations;
   public class FirstNameValidation:ValidationAttribute{
     protected override ValidationResult IsValid(object value, 
@@ -1107,7 +1107,7 @@ public ActionResult MyAction([ModelBinder(typeof(EmptyStringModelBinder))] MyMod
 
   2. 使用
 
-  ```C#
+  ```CSharp
   [FirstNameValidation]
   public string FirstName { get; set; }
   ```
@@ -1115,9 +1115,9 @@ public ActionResult MyAction([ModelBinder(typeof(EmptyStringModelBinder))] MyMod
 
 
 
-### 手动校验数据
+#### 手动校验数据
 
-```C#
+```CSharp
 var validResults = new List<ValidationResult>();
 string msg = "";
 //这里最后的true表示校验所有属性，false或无则只会校验Required
@@ -1166,9 +1166,9 @@ if (!Validator.TryValidateObject(t, new ValidationContext(t), validResults, true
    </div>
 
    <!--HtmlHelper类函数返回html字符串 例子-->
-   1.		@Html.TextBoxFor(x=>x.UserName)
+   1. @Html.TextBoxFor(x=>x.UserName)
    相当于	<input id="UserName" name="UserName" type="text" value="" />
-   2.		@using (Html.BeginForm("DoLogin", "Authentication", FormMethod.Post)){...}
+   2. @using (Html.BeginForm("DoLogin", "Authentication", FormMethod.Post)){...}
    相当于	<form action="/Authentication/DoLogin" method="post">...</form>
    验证失败显示错误信息：@Html.ValidationMessageFor(x=>x.UserName)
    使用HtmlHelper类时，验证失败返回时，之前填写的数据会自动保留
@@ -1200,7 +1200,7 @@ if (!Validator.TryValidateObject(t, new ValidationContext(t), validResults, true
 
 7. 创建 `DoLogin()`  action 方法（给`DoLogin()`添加`[HttpPost]`特性，使其只能用Post形式访问）
 
-   ```C#
+   ```CSharp
    //1.通过调用业务层功能检测用户是否合法。
 
    //2.如果是合法用户，创建认证Cookie。可用于以后的认证请求过程中。
@@ -1215,7 +1215,7 @@ if (!Validator.TryValidateObject(t, new ValidationContext(t), validResults, true
 
 8. 在View 中显示验证信息
 
-   ```C#
+   ```CSharp
    @Html.ValidationMessage("CredentialError", new {style="color:red;" })
    ```
 
@@ -1266,7 +1266,7 @@ if (!Validator.TryValidateObject(t, new ValidationContext(t), validResults, true
 
 * 通过调用Action返回
 
-  ```C#
+  ```CSharp
   //View处
   @{Html.RenderAction("GetAddNewLink");}
   //Action
@@ -1301,7 +1301,7 @@ if (!Validator.TryValidateObject(t, new ValidationContext(t), validResults, true
 
 1. 新建`AdminFilter`继承`ActionFilterAttribute`
 
-   ```C#
+   ```CSharp
    using System.Web.Mvc;
    public class AdminFilter : ActionFilterAttribute{
      //重写执行前事件
@@ -1325,7 +1325,7 @@ if (!Validator.TryValidateObject(t, new ValidationContext(t), validResults, true
 
 1. 创建布局页面MyLayout，基本就是普通的cshtml页面，也可以设置强类型
 
-   ```C#
+   ```CSharp
    //用此方法定义各部分
    //第二个参数表示该部分是否必须，是可选的，默认为true
    @RenderSection("ScetionName", [bool])
@@ -1333,7 +1333,7 @@ if (!Validator.TryValidateObject(t, new ValidationContext(t), validResults, true
 
 2. 创建使用布局的页面
 
-   ```C#
+   ```CSharp
    @{	
    	Layout = "~/Views/Shared/MyLayout.cshtml";	//设置使用的布局
    }
@@ -1357,7 +1357,7 @@ if (!Validator.TryValidateObject(t, new ValidationContext(t), validResults, true
 
 * 可以自定义ActionFilter对Action进行后处理，统一设置BaseViewModel
 
-  ```C#
+  ```CSharp
   using System.Web;
   using System.Web.Mvc;
   public class HeaderFooterFilter : ActionFilterAttribute{
@@ -1386,7 +1386,7 @@ if (!Validator.TryValidateObject(t, new ValidationContext(t), validResults, true
 
 1. **创建 `FileUploadViewModel`**
 
-   ```C#
+   ```CSharp
    public class FileUploadViewModel: BaseViewModel{
      //提供客户端上传的单独文件的访问
      public HttpPostedFileBase fileUpload {get; set ;}
@@ -1406,7 +1406,7 @@ if (!Validator.TryValidateObject(t, new ValidationContext(t), validResults, true
 
 3. 读取上传的文件(csv文件为例，csv是以逗号分隔数据的文本文件)
 
-   ```C#
+   ```CSharp
    public ActionResult Upload(FileUploadViewModel fileUpVM){
      ...
      var emps = new List<Employee>();
@@ -1499,14 +1499,14 @@ Asp.net  framework 维护线程池，每次当请求发送到webserver时，会�
 
 1. **创建异步控制器**
 
-   ```C#
+   ```CSharp
    //继承AsyncController类
    public class BulkUploadController : AsyncController{}
    ```
 
 2. **转换同步Action方法**
 
-   ```C#
+   ```CSharp
    //该功能通过两个关键字就可实现：async 和 await
    //异步方法必须返回void、Task或Task<T>
    public async Task<ActionResult> Upload(FileUploadViewModel fileUpVM) {
@@ -1562,7 +1562,7 @@ Asp.net  framework 维护线程池，每次当请求发送到webserver时，会�
 
    将过滤器绑定到action方法或controller上，不需要手动执行，打开 App_Start文件夹中的FilterConfig.cs文件。在 RegisterGlobalFilters 方法中会看到 HandleError 过滤器已经以全局过滤器绑定成功。
 
-   ```C#
+   ```CSharp
    [AllowAnonymous]	//使此Action跳过授权认证检查（AuthorizeAttribute）
    public static void RegisterGlobalFilters(GlobalFilterCollection filters){
    	filters.Add(new HandleErrorAttribute());//ExceptionFilter
@@ -1588,7 +1588,7 @@ Asp.net  framework 维护线程池，每次当请求发送到webserver时，会�
 
    **创建 ErrorController控制器，并创建Index方法**
 
-   ```C#
+   ```CSharp
    public class ErrorController : Controller {
      public ActionResult Index(){
        Exception e=new Exception("Invalid Controller or/and Action Name");
@@ -1615,7 +1615,7 @@ Asp.net  framework 维护线程池，每次当请求发送到webserver时，会�
 
   可以修改，不一定叫Error，也可以指定其他名字。如果Error View的名称改变了，当绑定HandleError过滤器时，必须制定View的名称。
 
-  ```C#
+  ```CSharp
   [HandleError(View="MyError")]
   //Or
   filters.Add(new HandleErrorAttribute(){
@@ -1627,7 +1627,7 @@ Asp.net  framework 维护线程池，每次当请求发送到webserver时，会�
 
   可以，在这种情况下，必须多次应用Handle error filter。
 
-  ```C#
+  ```CSharp
   [HandleError(View="DivideError",ExceptionType=typeof(DivideByZeroException))]
   [HandleError(View = "NotFiniteError", ExceptionType = typeof(NotFiniteNumberException))]
   [HandleError]
@@ -1651,7 +1651,7 @@ Asp.net  framework 维护线程池，每次当请求发送到webserver时，会�
 
    在根目录下，新建文件夹，命名为Logger。在Logger 文件夹下新建类 FileLogger
 
-   ```C#
+   ```CSharp
    public class FileLogger {
      public void LogException(Exception e) {
        //3种得到服务器物理路径的方法
@@ -1669,7 +1669,7 @@ Asp.net  framework 维护线程池，每次当请求发送到webserver时，会�
 
 2. **创建 EmployeeExceptionFilter 类**
 
-   ```c#
+   ```CSharp
    public class EmployeeExceptionFilter : HandleErrorAttribute{
      public override void OnException(ExceptionContext filterContext) {
        FileLogger logger = new FileLogger();
@@ -1684,7 +1684,7 @@ Asp.net  framework 维护线程池，每次当请求发送到webserver时，会�
 
    打开 FilterConfig.cs文件，删除 HandErrorAtrribute，添加上步中创建的。
 
-   ```c#
+   ```CSharp
    public static void RegisterGlobalFilters(GlobalFilterCollection filters){
      //filters.Add(new HandleErrorAttribute());//ExceptionFilter
      filters.Add(new EmployeeExceptionFilter());
@@ -1695,7 +1695,7 @@ Asp.net  framework 维护线程池，每次当请求发送到webserver时，会�
 
 * **3种得到服务器物理路径的方法**
 
-  ```C#
+  ```CSharp
   string filePath1 = AppDomain.CurrentDomain.BaseDirectory + "ErrorLog/xx.txt";
   string filePath2 = HttpContext.Current.Server.MapPath("~/ErrorLog/xx.txt");
   string filePath3 = HostingEnvironment.MapPath(@"~/ErrorLog/xx.txt");
@@ -1705,7 +1705,7 @@ Asp.net  framework 维护线程池，每次当请求发送到webserver时，会�
 
   可以，代码如下：
 
-  ```c#
+  ```CSharp
   public override void OnException(ExceptionContext filterContext){
     FileLogger logger = new FileLogger();
     logger.LogException(filterContext.Exception);
@@ -1756,13 +1756,13 @@ Server.MapPath()的全名是System.Web.HttpContext.Current.Server.MapPath()。�
 
 默认情况下，路径是项目模板组成的一部分。可在 Global.asax 文件中检查到，在 Application_Start中会发现以下语句：
 
-```C#
+```CSharp
 RouteConfig.RegisterRoutes(RouteTable.Routes);
 ```
 
 App_Start文件夹下的 RouteConfig.cs文件，包含以下代码块：
 
-```c#
+```CSharp
 public class RouteConfig{
   public static void RegisterRoutes(RouteCollection routes){
     routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
@@ -1836,7 +1836,7 @@ MapRoute 方法也可与 RouteHandler 关联。
 
 #####定义自己的路由
 
-```C#
+```CSharp
 public class RouteConfig {
   public static void RegisterRoutes(RouteCollection routes) {
     routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
@@ -1868,7 +1868,7 @@ public class RouteConfig {
 
   可使用正则表达式。如：
 
-  ```c#
+  ```CSharp
   routes.MapRoute(
     "MyRoute",
     "Employee/{EmpId}",
@@ -1895,7 +1895,7 @@ public class RouteConfig {
 
      在 RegisterRoutes 方法中在 IgnoreRoute语句后输入代码如下：
 
-     ```c#
+     ```CSharp
      routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
      routes.MapMvcAttributeRoutes();	//这一句
      routes.MapRoute(...);
@@ -1903,7 +1903,7 @@ public class RouteConfig {
 
   2. **定义action 方法的 route pattern**
 
-     ```C#
+     ```CSharp
      [Route("Employee/List")]
      public ActionResult Index(){...}
      //routing 属性也可定义route 参数
@@ -1946,7 +1946,7 @@ Areas是实现Asp.net MVC 项目模块化管理的一种简单方法。
 
   在本次实验中你会发现nameSPAArealRegistration.cs文件被存放在“~/Areas/SPA”文件夹下，SPAArealRegistration类的代码如下：
 
-  ```C#
+  ```CSharp
   public class SPAAreaRegistration : AreaRegistration {
     public override string AreaName {get {return "SPA";}}
     //这重点
@@ -1964,7 +1964,7 @@ Areas是实现Asp.net MVC 项目模块化管理的一种简单方法。
 
   打开global.asax文件，首行代码如下：
 
-  ```c#
+  ```CSharp
   AreaRegistration.RegisterAllAreas();
   ```
 
@@ -2092,7 +2092,7 @@ Areas是实现Asp.net MVC 项目模块化管理的一种简单方法。
 
 ##### 小示例
 
-```c#
+```CSharp
 public class EmployeeController : ApiController{
   public Employee GET() {
     Employee e = new Employee() {
@@ -2122,7 +2122,7 @@ public class EmployeeController : ApiController{
 
   实际中，我们总是希望创建多个Get / Post / Put / Delete方法。如 GetCustomers，GetCustomerById。在这种情况下，我们必须定义多个路由，或者我们必须更改默认路由。
 
-  ```c#
+  ```CSharp
   config.Routes.MapHttpRoute(
     name: "SecondRoute",
     routeTemplate: "api/GetCustomerById/{id} ",
@@ -2171,7 +2171,7 @@ Web API的参数绑定和mvc不同！
     });
     ```
 
-    ```c#
+    ```CSharp
     public HttpResponseMessage Post([FromBody] string dataStr){}
     ```
 
@@ -2184,7 +2184,7 @@ Web API的参数绑定和mvc不同！
     });
     ```
 
-    ```c#
+    ```CSharp
     using Newtonsoft.Json.Linq;
     public HttpResponseMessage Post(dynamic data){
       //解析出复杂对象
@@ -2194,7 +2194,7 @@ Web API的参数绑定和mvc不同！
 
   * 在webApi中用post接收大量基础类型数据，包括数组
 
-    ```c#
+    ```CSharp
     public HttpResponseMessage PostXXX(dynamic data){
      int[] array = (data.array as JArray).ToObject<int[]>(); 
     }
@@ -2205,7 +2205,7 @@ Web API的参数绑定和mvc不同！
 
 - 普通的dynamic对象，读取未存入的属性，会出现异常，而WebApi中通过post传参的到的dynamic对象则不会，大概是因为它是NewtonSoft.Json.Linq.JObject类型的
 
-  ```c#
+  ```CSharp
   dynamic data = new ExpandoObject();
   string str = data.str ?? "";	//异常：“System.Dynamic.ExpandoObject”未包含“str”的定义
 
@@ -2216,7 +2216,7 @@ Web API的参数绑定和mvc不同！
 
 - 反序列化字符串
 
-  ```c#
+  ```CSharp
   //反序列化为匿名类型
   var data = new { his = new history_lock_ship_infor(), rec = new record_ship_gates(), 
                   userName = string.Empty, userCode = string.Empty };
@@ -2228,7 +2228,7 @@ Web API的参数绑定和mvc不同！
 
 - 将dynamic转换为具体类型
 
-  ```c#
+  ```CSharp
   var user = ((JObject)dataStr).ToObject<vf_users>();
   ```
 
@@ -2243,7 +2243,7 @@ Web API的参数绑定和mvc不同！
 
 * Json字符串，带引号的，用Content()返回可被浏览器解析为Json如
 
-  ````c#
+  ````CSharp
   return Content("{'key':'value'}");	//key可加可不加
   //但是在1.4之后的JQuery中，必须用双引号！
   return Content("{\"key\":\"value\"}");
@@ -2253,7 +2253,7 @@ Web API的参数绑定和mvc不同！
 
 * Controller请求外网API并获取JSON
 
-  ```C#
+  ```CSharp
   //拼接要访问的api地址
   string url = "";
   //创建Request
@@ -2282,7 +2282,7 @@ Web API的参数绑定和mvc不同！
   </appSettings>
   ```
 
-  ```c#
+  ```CSharp
   string value = System.Configuration.ConfigurationManager.AppSettings["key"];
   ```
 
@@ -2486,7 +2486,7 @@ Database/Initial Catalog**：数据库的名称。
 
 ADO.NET有专门的类来处理连接字符串：`DbConnectionStringBuilder`，为**强类型连接字符串生成基类**。
 
-```C#
+```CSharp
 //以SQL Server为例
 SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder(){
   DataSource = @"(local)\SQLEXPRESS",
@@ -2515,7 +2515,7 @@ connection.Close();
 
 我们只需要在程序中添加相应代码来获取配置文件中的值
 
-```C#
+```CSharp
 string connStr = ConfigurationManager.ConnectionStrings["connStr"].ToString(); 
 ```
 
@@ -2557,7 +2557,7 @@ string connStr = ConfigurationManager.ConnectionStrings["connStr"].ToString();
 
 2. 利用using语句,**using语句的作用是确保资源使用后，并很快释放它们**
 
-   ```C#
+   ```CSharp
    using(SqlConnection conn = new SqlConnection(connStr)){ //todo }
    ```
 
@@ -2597,7 +2597,7 @@ string connStr = ConfigurationManager.ConnectionStrings["connStr"].ToString();
 
 
 
-#####连接字符串属性
+##### 连接字符串属性
 
 **连接池的行为可以通过连接字符串来控制**，主要包括四个重要的属性：
 
@@ -2638,7 +2638,7 @@ string connStr = ConfigurationManager.ConnectionStrings["connStr"].ToString();
 
 * **CommandType** ：命令类型，指示或指定如何解释CommandText属性。CommandType属性的值是一个枚举类型，定义结构如下：
 
-  ```c#
+  ```CSharp
   public enum CommandType{
     Text = 1,    //SQL 文本命令。（默认。）          
     StoredProcedure = 4,    // 存储过程的名称。          
@@ -2733,7 +2733,7 @@ string connStr = ConfigurationManager.ConnectionStrings["connStr"].ToString();
 
 **异步执行的根本思想是，在执行命令操作时，无需等待命令操作完成，可以并发的处理其他操作。**ADO.NET提供了丰富的方法来处理异步操作，**BeginExecuteNonQuery**和**EndExcuteNonQuery**就是一对典型的为异步操作服务的方法。**BeginExecuteNonQuery**方法返回**System.IAsyncResult**接口对象。我们可以根据**IAsyncResult**的**IsCompleted**属性来轮询（检测）命令是否执行完成。
 
-```C#
+```CSharp
 using (SqlConnection conn = new SqlConnection(connStr.ConnectionString)){
   conn.Open();
   SqlCommand cmd = new SqlCommand(strSQL.ToString(), conn);
@@ -2771,7 +2771,7 @@ using (SqlConnection conn = new SqlConnection(connStr.ConnectionString)){
 * **Add**
 * **AddRange**
 
-```C#
+```CSharp
 using (SqlConnection connection = new SqlConnection("")){
       SqlCommand command = connection.CreateCommand();
       command.CommandText = "";
@@ -2829,7 +2829,7 @@ ADO.NET提供了基于非连接的核心组件：DataSet。DataSet组件让我�
 
 例子
 
-```C#
+```CSharp
 using (SqlConnection conn = new SqlConnection(connStr)) {
   SqlDataAdapter ada = new SqlDataAdapter(selCmdStr, conn);
   				   //= new SqlDataAdapter(command);
@@ -2885,7 +2885,7 @@ T中的属性必须与必须与查询出来的语句完全一致，否则会出�
 
 Entry将会强制更新所有属性，性能会比较差
 
-```c#
+```CSharp
 using(var dbContext = new MyDbContext()){
     //更新所有属性
     var user = new User(){ id = 1, name = "John", age = 17};	//根据id来修改的
@@ -3124,7 +3124,7 @@ END
 
 开启一个事务示例：
 
-```c#
+```CSharp
 var conn = GetConnection();
 conn.Open();
 //开启一个事务
@@ -3416,7 +3416,7 @@ iBatis含有三种配置文件：
 
 **Ibatis**中，加载、分析配置以及映射文件是在创建**SqlMapper**实例的时候进行的，另外对数据库的操作，也是在**SqlMapper**实例上调用方法来完成。在**IBatis**外部的程序中，创建**SqlMapper**的实例的方式是：
 
-```C#
+```CSharp
 ISqlMapper mapper = Mapper.Instance();
 ```
 
@@ -3424,7 +3424,7 @@ ISqlMapper mapper = Mapper.Instance();
 
 如果你不希望修改了配置文件就重新加载，可以通过这样来创建实例
 
-```C#
+```CSharp
 ISqlMapper mapper = builder.Configure();
 ```
 
@@ -3436,7 +3436,7 @@ ISqlMapper mapper = builder.Configure();
 
 这个问题可以在创建**SQLMapper**的时候指定
 
-```C#
+```CSharp
 SqlMapper.SessionStore = new HybridWebThreadSessionStore(sqlMapper.Id);
 
 public void InitMapper(string sqlMapperPath)
@@ -3453,7 +3453,7 @@ public void InitMapper(string sqlMapperPath)
 
 在留言板项目中，用了一个类来获取SqlMapper实例，如下：
 
-```C#
+```CSharp
 //实现接口，用来进行依赖注入
 public class Mapper : IMapper{
   private static volatile ISqlMapper _mapper = null;
@@ -3493,7 +3493,7 @@ public class Mapper : IMapper{
 
    * **QueryForList：返回List<T>强类型数据集合**
 
-   ```C#
+   ```CSharp
    IList<T> QueryForList<T>(string statementName, object parameterObject);
    IList QueryForList(string statementName, object parameterObject);
    void QueryForList<T>(string statementName, object parameterObject, IList<T> resultObject);
@@ -3506,7 +3506,7 @@ public class Mapper : IMapper{
 
    * **QueryForObject：返回一行数据对应程序的实体类实例**
 
-   ```C#
+   ```CSharp
    object QueryForObject(string statementName, object parameterObject);
    T QueryForObject<T>(string statementName, object parameterObject);
    T QueryForObject<T>(string statementName, object parameterObject, T instanceObject);
@@ -3515,7 +3515,7 @@ public class Mapper : IMapper{
 
    * **QueryWithRowDelegate：通过委托过滤返回的数据**
 
-   ```C#
+   ```CSharp
    IList<T> QueryWithRowDelegate<T>(string statementName, object parameterObject, 
                                     RowDelegate<T> rowDelegate);
    IList QueryWithRowDelegate(string statementName, object parameterObject, 
@@ -3847,7 +3847,7 @@ Unity.config示例
 
 在Global.asax中添加
 
-```C#
+```CSharp
 //实现IUnityContainerAccessor
 public class MvcApplication : System.Web.HttpApplication, IUnityContainerAccessor{
   protected void Application_Start(){
@@ -4037,7 +4037,7 @@ $('#example').DataTable().rows(rowIndex).data()[0];
 
 当在modal中使用datepicker时，datepicker的显示和隐藏会触发modal的显示隐藏事件，解决方法是阻止其向上冒泡
 
-```C#
+```CSharp
 //阻止datepicker的show/hide事件向上冒泡，因为会触发modal的事件
 $document.on("show", ".datepicker", function (e) {
 	//e.preventDefault();
@@ -4068,7 +4068,7 @@ $(".datepicker").datepicker().show(function (e) {
 * `using`语句提供可确保正确使用`IDisposable`对象的方便语法。
 
 
-```c#
+```CSharp
 using (Font font1 = new Font("Arial", 10.0f)) 
 {
     byte charset = font1.GdiCharSet;
@@ -4177,7 +4177,7 @@ using (Font font3 = new Font("Arial", 10.0f), font4 = new Font("Arial", 10.0f))
 
 * linq 左连接
 
-  ```c#
+  ```CSharp
   //linq to Entity和linq to Object最好不要混用，会报错
   var result = from o in ois
   join s in ships
