@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2050
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleTest", "ConsoleTest\ConsoleTest.csproj", "{F0A8065D-E7A7-4DEB-81CF-A51A1FB53493}"
 EndProject
@@ -80,6 +80,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "表达式树练习", "表达式树练习\表达式树练习.csproj", "{4DCA72FB-7440-476C-A6C1-1D6FD57E51F1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LINQtoObjects连接练习", "LINQtoObjects连接练习\LINQtoObjects连接练习.csproj", "{D5E5E44A-92F8-4995-A510-39910AAB0B6B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FakeQueryable", "FakeQueryable\FakeQueryable.csproj", "{01240711-41C7-4456-856B-C5F43D8C6432}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -523,8 +525,23 @@ Global
 		{D5E5E44A-92F8-4995-A510-39910AAB0B6B}.Release|x64.Build.0 = Release|Any CPU
 		{D5E5E44A-92F8-4995-A510-39910AAB0B6B}.Release|x86.ActiveCfg = Release|Any CPU
 		{D5E5E44A-92F8-4995-A510-39910AAB0B6B}.Release|x86.Build.0 = Release|Any CPU
+		{01240711-41C7-4456-856B-C5F43D8C6432}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01240711-41C7-4456-856B-C5F43D8C6432}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01240711-41C7-4456-856B-C5F43D8C6432}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{01240711-41C7-4456-856B-C5F43D8C6432}.Debug|x64.Build.0 = Debug|Any CPU
+		{01240711-41C7-4456-856B-C5F43D8C6432}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{01240711-41C7-4456-856B-C5F43D8C6432}.Debug|x86.Build.0 = Debug|Any CPU
+		{01240711-41C7-4456-856B-C5F43D8C6432}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01240711-41C7-4456-856B-C5F43D8C6432}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01240711-41C7-4456-856B-C5F43D8C6432}.Release|x64.ActiveCfg = Release|Any CPU
+		{01240711-41C7-4456-856B-C5F43D8C6432}.Release|x64.Build.0 = Release|Any CPU
+		{01240711-41C7-4456-856B-C5F43D8C6432}.Release|x86.ActiveCfg = Release|Any CPU
+		{01240711-41C7-4456-856B-C5F43D8C6432}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C0BFBF31-C748-48B2-94B6-79DBB167E826}
 	EndGlobalSection
 EndGlobal
