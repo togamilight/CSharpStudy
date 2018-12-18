@@ -10,7 +10,13 @@ namespace FakeQueryable
     {
         static void Main(string[] args)
         {
-            
+            var query = from x in new FakeQuery<string>()
+                        where x.StartsWith("abc")
+                        select x.Length;
+            foreach (int i in query) { }
+
+            foreach (var x in new FakeQuery<string>()) { }
+            Console.ReadKey();
         }
     }
 
@@ -63,7 +69,7 @@ namespace FakeQueryable
 
         public object Execute(Expression expression) {
             Console.WriteLine("FakeQueryProvider: " + expression.ToString());
-            return default(null);
+            return null;
         }
     }
 }
